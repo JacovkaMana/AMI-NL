@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-green: #2E3A24;
+  --color-gold: #FFD700;
+  --color-beige: #F5F5DC;
+  --color-slate-gray: #2F4F4F;
+}
+
+@layer base {
+  h1 {
+    @apply font-cinzel text-4xl font-bold;
+  }
+  h2 {
+    @apply font-cinzel text-3xl font-semibold;
+  }
+  h3 {
+    @apply font-cinzel text-xl font-medium;
+  }
+  body {
+    @apply font-roboto text-base;
+  }
+}
+
+.btn-primary {
+  @apply bg-gold text-slate-gray px-4 py-2 rounded hover:bg-amber-500 transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-green text-white px-4 py-2 rounded hover:bg-emerald-800 transition-colors;
+}
+
+.input-field {
+  @apply w-full px-4 py-2 rounded border border-slate-gray/20 focus:outline-none focus:ring-2 focus:ring-gold;
+}

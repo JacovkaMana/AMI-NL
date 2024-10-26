@@ -1,0 +1,22 @@
+services:
+  neo4j:
+    image: neo4j:latest
+    container_name: my-neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - ./neo4j/data:/data
+      - ./neo4j/logs:/logs
+      - ./neo4j/import:/var/lib/neo4j/import
+      - ./neo4j/plugins:/plugins
+    environment:
+      - NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASSWORD}
+      - NEO4J_dbms_memory_heap_initial__size=${NEO4J_HEAP_MEMORY:-512M}
+      - NEO4J_dbms_memory_heap_max__size=${NEO4J_MAX_HEAP:-1G}
+      - NEO4J_dbms_memory_pagecache_size=${NEO4J_CACHE_MEMORY:-512M}
+    restart: unless-stopped
+
+networks:
+  default:
+    name: neo4j_network
