@@ -70,6 +70,29 @@ Come up with a default landing page in style from @project_designdoc.md, it shou
 Use styles and design from @project_designdoc.md 
 
 Write in already created files or create new files if needed
+If you need to create files, write bash commands to create them and then code in them
+
+
+Rechek if all the functionality from @project_functionality.md and @project_technologies.md are met
+
+Rechek if the code works and all dependencies and project structure is correct
+
+Fix any global css problems
+```
+
+
+
+```
+Edit code in @frontend folder according to @project_functionality.md and @project_technologies.md 
+
+
+Create login/register page/pages that could be routed from landing page according to  @project_functionality.md 
+
+Use styles and design from @project_designdoc.md 
+
+Write in already created files or create new files if needed
+If you need to create files, write bash commands to create them and then code in them
+
 
 Rechek if all the functionality from @project_functionality.md and @project_technologies.md are met
 

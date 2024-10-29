@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import Layout from '../components/Layout';
+import LoginModal from '../components/LoginModal';
+import RegisterModal from '../components/RegisterModal';
 
 const Home = () => {
     const router = useRouter();
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
     return (
         <Layout>
@@ -15,19 +18,21 @@ const Home = () => {
                 </p>
                 <div className="space-x-4">
                     <button
-                        onClick={() => router.push('/auth/login')}
+                        onClick={() => setIsLoginModalOpen(true)}
                         className="btn-primary"
                     >
                         Login
                     </button>
                     <button
-                        onClick={() => router.push('/auth/register')}
+                        onClick={() => setIsRegisterModalOpen(true)}
                         className="btn-secondary"
                     >
                         Register
                     </button>
                 </div>
             </div>
+            <LoginModal isOpen={isLoginModalOpen} onRequestClose={() => setIsLoginModalOpen(false)} />
+            <RegisterModal isOpen={isRegisterModalOpen} onRequestClose={() => setIsRegisterModalOpen(false)} />
         </Layout>
     );
 };

@@ -3,7 +3,7 @@ from backend.app.api.main import app as api_app
 
 app = FastAPI()
 
-# Include the API routes
+# Include the API routessd
 app.include_router(api_app, prefix="/api", tags=["API"])
 
 # You can add additional middleware, event handlers, etc. here

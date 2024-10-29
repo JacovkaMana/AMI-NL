@@ -1,0 +1,31 @@
+.login-modal {
+  background-color: var(--color-beige);
+  padding: 2rem;
+  border-radius: 0.5rem;
+  max-width: 400px;
+  width: 100%;
+}
+
+.login-modal h2 {
+  font-family: var(--font-cinzel);
+  font-size: 1.5rem;
+  color: var(--color-green);
+  margin-bottom: 1rem;
+}
+
+.login-modal input {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--color-slate-gray);
+  border-radius: 0.25rem;
+}
+
+.login-modal button {
+  background-color: var(--color-gold);
+  color: var(--color-slate-gray);
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
