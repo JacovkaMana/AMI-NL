@@ -201,7 +201,7 @@ const CharacterCreation = () => {
                 <h2 className="text-xl font-cinzel text-[var(--color-text-primary)] mb-4">Basic Information</h2>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-roboto font-bold mb-1 text-slate-gray">Character Name</label>
+                    <label className="block text-sm font-roboto font-bold mb-1 text-[var(--color-text-secondary)]">Character Name</label>
                     <input
                       type="text"
                       name="name"
@@ -213,7 +213,7 @@ const CharacterCreation = () => {
 
                   <div className="grid grid-cols-2 gap-2">
                     <div className="col-span-2">
-                      <label className="block text-sm font-roboto font-bold mb-1 text-slate-gray">Class</label>
+                      <label className="block text-sm font-roboto font-bold mb-1 text-[var(--color-text-secondary)]">Class</label>
                       <select
                         name="class"
                         value={character.class}
@@ -231,7 +231,7 @@ const CharacterCreation = () => {
                   {/* Other basic info fields with updated styling */}
                   {['race', 'background', 'alignment'].map((field) => (
                     <div key={field}>
-                      <label className="block text-sm font-roboto font-bold mb-1 text-slate-gray capitalize">
+                      <label className="block text-sm font-roboto font-bold mb-1 text-[var(--color-text-secondary)] capitalize">
                         {field}
                       </label>
                       <select
@@ -277,7 +277,7 @@ const CharacterCreation = () => {
                     value={character.description}
                     onChange={handleChange}
                     placeholder="Describe your character's appearance, personality, and background story..."
-                    className="input-field h-48 resize-none"
+                    className="input-field h-48 resize-none placeholder-[var(--color-text-secondary)]"
                     rows={6}
                   />
                 </div>
@@ -295,7 +295,7 @@ const CharacterCreation = () => {
 
           <div className="mt-6 space-y-4">
             {error && (
-              <div className="text-red-500 text-sm font-roboto text-center">
+              <div className="text-[var(--color-text-primary)] text-sm font-roboto text-center bg-[var(--color-bg-error)] p-2 rounded">
                 {error}
               </div>
             )}
