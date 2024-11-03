@@ -188,17 +188,6 @@ Edit  according to
 
 
 
-That's great 
-
-Can you use this reference file in terms of layout?
-
-In terms of visuals: 
-   
-use Tailwind CSS 
-form background should be visible and be sheet-like
-and foir colors:
-- **Primary Color**:   - Dark Green (#2E3A24) - Represents nature and adventure.- **Secondary Color**:   - Gold (#FFD700) - Symbolizes achievement and treasure.- **Background Color**:   - Light Beige (#F5F5DC) - Provides a warm, inviting backdrop.- **Text Color**:   - Dark Slate Gray (#2F4F4F) - Ensures readability against the background.
-
 
 
 
@@ -206,14 +195,26 @@ and foir colors:
 Sprint 2:
 
 
-Can you make this page look more like a dnd creation page and more in-style with landing page?
+Can you make this page @character-creation.js  look more like a dnd creation page and more in-style with landing page? 
+
+Here is the whole frontend folder:  @frontend 
+Here is src folder with pages and else: @src 
+Here is the reference: @ref.png 
+Prefer using Tailwind
+
+Use only global css, as stated in Next
 
 
 
-Here is the whole frontend folder:    
-
-Here is src folder with pages and else:   
 
 
+Now add to this a textfield that user would input his character description (like appearence and everything else)
 
-Prefer using Tailwind 
+Then make character creation form more vertical and move it to the left, so that on the right can be a picture of the same size as the form (like a character preview)
+
+
+
+
+Now please edit colors and fonts on landing page @index.js  according to character creation page @character-creation.js  , i really like the colors there 
+
+Also can you add the day/night version to all pages?

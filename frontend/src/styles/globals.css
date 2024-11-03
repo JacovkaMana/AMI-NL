@@ -3,13 +3,33 @@
 @tailwind utilities;
 
 :root {
-  --color-green: #2E3A24;
-  --color-gold: #FFD700;
-  --color-beige: #F5F5DC;
-  --color-slate-gray: #2F4F4F;
+  /* Light theme (default) */
+  --color-bg-primary: #F5F5DC;  /* beige */
+  --color-bg-secondary: #FFFFFF;
+  --color-text-primary: #2F4F4F; /* slate-gray */
+  --color-text-secondary: rgba(47, 79, 79, 0.6); /* slate-gray with opacity */
+  --color-border: rgba(47, 79, 79, 0.2);
+  --color-accent: #FFD700; /* gold */
+  --color-accent-hover: #F4C430;
+}
+
+[data-theme='dark'] {
+  --color-bg-primary: #0F0F0F;    /* Very dark, almost black background */
+  --color-bg-secondary: #1A1A1A;  /* Slightly lighter dark */
+  --color-text-primary: #E8D5B5;  /* Warm parchment-like text */
+  --color-text-secondary: rgba(232, 213, 181, 0.7);  /* Parchment with opacity */
+  --color-border: rgba(232, 213, 181, 0.15);  /* Subtle warm borders */
+  --color-accent: #B4924C;        /* Antique bronze */
+  --color-accent-hover: #C9AA6B;  /* Lighter antique bronze on hover */
 }
 
 @layer base {
+  body {
+    @apply font-roboto;
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+  }
+
   h1 {
     @apply font-cinzel text-4xl font-bold;
   }
@@ -19,46 +39,53 @@
   h3 {
     @apply font-cinzel text-xl font-medium;
   }
-  body {
-    @apply font-roboto text-base;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-[var(--color-accent)] text-slate-gray px-6 py-3 rounded-lg 
+    hover:bg-[var(--color-accent-hover)] transition-colors duration-200
+    font-cinzel font-bold shadow-md;
   }
 
-  .bg-parchment {
-    background-color: #F5E6D3;
-    background-image: 
-      linear-gradient(rgba(255,255,255,.2) 2px, transparent 2px),
-      linear-gradient(90deg, rgba(255,255,255,.2) 2px, transparent 2px);
-    background-size: 50px 50px;
+  .btn-secondary {
+    @apply bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] px-6 py-3 
+    rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-bg-primary)] 
+    transition-colors duration-200 font-cinzel font-bold shadow-md;
   }
-  
-  .font-medieval {
-    font-family: 'Merriweather', serif;
+
+  .input-field {
+    @apply w-full px-4 py-2 rounded-lg border border-[var(--color-border)]
+    bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]
+    focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)];
   }
 }
 
-.btn-primary {
-  @apply bg-gold text-slate-gray px-4 py-2 rounded hover:bg-amber-500 transition-colors;
+.bg-parchment {
+  background-color: #F5E6D3;
+  background-image: 
+    linear-gradient(rgba(255,255,255,.2) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(255,255,255,.2) 2px, transparent 2px);
+  background-size: 50px 50px;
 }
 
-.btn-secondary {
-  @apply bg-green text-white px-4 py-2 rounded hover:bg-emerald-800 transition-colors;
-}
-
-.input-field {
-  @apply w-full px-4 py-2 rounded border border-slate-gray/20 focus:outline-none focus:ring-2 focus:ring-gold;
+.font-medieval {
+  font-family: 'Merriweather', serif;
 }
 
 .ReactModal__Overlay {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.75);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .ReactModal__Content {
-  background-color: #F5F5DC;
+  background-color: var(--color-bg-secondary) !important;
+  color: var(--color-text-primary) !important;
   padding: 2rem;
   border-radius: 0.5rem;
   max-width: 400px;
   width: 100%;
+  border: 1px solid var(--color-border) !important;
 }
