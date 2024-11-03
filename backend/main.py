@@ -1,10 +1,18 @@
 from fastapi import FastAPI
-from backend.app.api.main import app as api_app
+from api.main import router as api_router
+from core.config import init_neo4j
 
 app = FastAPI()
 
-# Include the API routessd
-app.include_router(api_app, prefix="/api", tags=["API"])
+
+# Initialize Neo4j on startup
+@app.on_event("startup")
+async def startup_event():
+    init_neo4j()
+
+
+# Include the API routes
+app.include_router(api_router, prefix="/api", tags=["API"])
 
 # You can add additional middleware, event handlers, etc. here
 

@@ -218,3 +218,36 @@ Then make character creation form more vertical and move it to the left, so that
 Now please edit colors and fonts on landing page @index.js  according to character creation page @character-creation.js  , i really like the colors there 
 
 Also can you add the day/night version to all pages?
+
+
+
+
+
+
+
+View my @frontend folder
+
+Edit my login and registration for my frontend pages in @src  folder to use my api:
+
+
+login: http://localhost:8000/api/auth/login
+register: http://localhost:8000/api/auth/register
+me: http://localhost:8000/api/auth/me
+
+
+Also fix the login/register modals according to our new night/day themes
+
+And create an Account status on the page with a logout button
+
+
+
+
+
+My modals are not very good for a night theme and don't match overall styles (text colors, overall colors) in @src 
+
+Please make them more in-style, remove screen brightening when opening modals
+
+Scan @index.js and @character-creation.js to see how we done styling in there 
+
+Prefer Tailwind 
+Use Global css

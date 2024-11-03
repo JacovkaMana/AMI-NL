@@ -85,3 +85,20 @@ synchronize .env and docker-compose.yml with all needed parameters
 
 Create needed files and folders as you go 
 ```
+
+
+
+
+# Sprint 2
+
+
+
+Now let's edit our api @backend 
+
+I need working login and register methods
+
+Login field - Email/Password  Password 
+Register fields -  Username Email Password
+
+It should be a jwt system
+ 

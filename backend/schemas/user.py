@@ -1,13 +1,33 @@
-from pydantic import BaseModel
-from backend.app.models.class_feature import Player  # Importing the Player model
-from backend.app.schemas.enums import Alignment  # Importing Enums
+from pydantic import BaseModel, EmailStr
+from typing import Optional
+from models.enums import Alignment
 
 
-class UserSchema(BaseModel):
-    uid: str
+class UserBase(BaseModel):
     username: str
-    email: str
-    alignment: Alignment  # Added alignment field
+    email: EmailStr
+    alignment: Optional[Alignment] = None
+
+    class Config:
+        use_enum_values = True
+
+
+class UserCreate(UserBase):
+    password: str
+
+
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    email: Optional[EmailStr] = None
+    alignment: Optional[Alignment] = None
+    password: Optional[str] = None
+
+    class Config:
+        use_enum_values = True
+
+
+class UserSchema(UserBase):
+    uid: str
 
     class Config:
         orm_mode = True

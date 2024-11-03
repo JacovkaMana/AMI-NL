@@ -1,16 +1,41 @@
 from pydantic import BaseModel
-from backend.app.models.character import Character  # Importing the Character model
-from backend.app.schemas.enums import EquipmentSlot  # Importing Enums
+from typing import List, Optional
+from models.enums import Race, CharacterClass, Alignment, Size, EquipmentSlot
 
 
 class CharacterSchema(BaseModel):
     uid: str
     name: str
-    level: int
-    equipment_slots: list[EquipmentSlot]  # Added equipment slots
+    race: Race
+    level: int = 1
+    alignment: Alignment
+    size: Size
+    equipment_slots: List[EquipmentSlot] = []
+    character_class: Optional[CharacterClass] = None
 
     class Config:
         orm_mode = True
+        use_enum_values = True  # This will serialize enums to their values
 
 
-# ... additional schemas can be added here ...
+class CharacterCreate(BaseModel):
+    name: str
+    race: Race
+    alignment: Alignment
+    size: Size
+    character_class: Optional[CharacterClass] = None
+
+    class Config:
+        use_enum_values = True
+
+
+class CharacterUpdate(BaseModel):
+    name: Optional[str] = None
+    race: Optional[Race] = None
+    level: Optional[int] = None
+    alignment: Optional[Alignment] = None
+    size: Optional[Size] = None
+    character_class: Optional[CharacterClass] = None
+
+    class Config:
+        use_enum_values = True
