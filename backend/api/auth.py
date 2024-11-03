@@ -15,6 +15,16 @@ router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
+@router.options("/register")
+async def options_register():
+    return {}
+
+
+@router.options("/login")
+async def options_login():
+    return {}
+
+
 @router.post("/register", response_model=UserResponse)
 async def register(user_data: UserCreate):
     # Check if user exists
@@ -55,7 +65,4 @@ async def login(user_data: UserLogin):
 
 @router.get("/me", response_model=UserResponse)
 async def read_users_me(current_user: User = Depends(get_current_user)):
-    """
-    Get current user data based on JWT token
-    """
     return current_user

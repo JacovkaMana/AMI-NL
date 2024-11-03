@@ -1,17 +1,43 @@
 import React, { useState } from 'react';
 import Modal from 'react-modal';
+import { authService } from '../services/auth';
+import { useRouter } from 'next/router';
 
 const RegisterModal = ({ isOpen, onRequestClose }) => {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: '',
     confirmPassword: '',
   });
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle registration logic here
+    setError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    try {
+      // Remove confirmPassword before sending to API
+      const { confirmPassword, ...registrationData } = formData;
+      await authService.register(registrationData);
+      
+      // After successful registration, log them in
+      await authService.login({
+        email: formData.email,
+        password: formData.password,
+      });
+      
+      onRequestClose();
+      router.push('/character-creation'); // or wherever you want to redirect after registration
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
@@ -34,6 +60,12 @@ const RegisterModal = ({ isOpen, onRequestClose }) => {
           </div>
           
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="p-3 bg-red-500/10 border border-red-500 rounded text-red-500 text-sm">
+                {error}
+              </div>
+            )}
+            
             <div>
               <label className="block text-sm font-roboto font-bold mb-1 text-[var(--color-text-secondary)]">
                 Username

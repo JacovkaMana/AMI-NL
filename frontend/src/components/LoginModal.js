@@ -1,15 +1,27 @@
 import React, { useState } from 'react';
 import Modal from 'react-modal';
+import { authService } from '../services/auth';
+import { useRouter } from 'next/router';
 
 const LoginModal = ({ isOpen, onRequestClose }) => {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle login logic here
+    setError('');
+    
+    try {
+      await authService.login(formData);
+      onRequestClose();
+      router.push('/character-creation'); // or wherever you want to redirect after login
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
@@ -32,6 +44,12 @@ const LoginModal = ({ isOpen, onRequestClose }) => {
           </div>
           
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="p-3 bg-red-500/10 border border-red-500 rounded text-red-500 text-sm">
+                {error}
+              </div>
+            )}
+            
             <div>
               <label className="block text-sm font-roboto font-bold mb-1 text-[var(--color-text-secondary)]">
                 Email
