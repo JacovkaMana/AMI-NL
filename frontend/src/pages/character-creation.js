@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-// Array of options for Class, Race, Background, and Alignment
-const CLASS_OPTIONS = ['Fighter', 'Wizard', 'Rogue', 'Cleric']; // Add more options as needed
-const RACE_OPTIONS = ['Human', 'Elf', 'Dwarf', 'Orc']; // Add more options as needed
-const BACKGROUND_OPTIONS = ['Noble', 'Criminal', 'Folk Hero', 'Sage']; // Add more options as needed
-const ALIGNMENT_OPTIONS = ['Lawful Good', 'Neutral Good', 'Chaotic Good', 'Lawful Neutral', 'True Neutral', 'Chaotic Neutral', 'Lawful Evil', 'Neutral Evil', 'Chaotic Evil']; // Add more options as needed
+const CLASS_OPTIONS = ['Fighter', 'Wizard', 'Rogue', 'Cleric'];
+const RACE_OPTIONS = ['Human', 'Elf', 'Dwarf', 'Orc'];
+const BACKGROUND_OPTIONS = ['Noble', 'Criminal', 'Folk Hero', 'Sage'];
+const ALIGNMENT_OPTIONS = ['Lawful Good', 'Neutral Good', 'Chaotic Good', 'Lawful Neutral', 'True Neutral', 'Chaotic Neutral', 'Lawful Evil', 'Neutral Evil', 'Chaotic Evil'];
 
 const CharacterCreation = () => {
   const [character, setCharacter] = useState({
@@ -15,6 +14,7 @@ const CharacterCreation = () => {
     race: '',
     alignment: '',
     experiencePoints: 0,
+    description: '',
     stats: {
       strength: 10,
       dexterity: 10,
@@ -23,7 +23,6 @@ const CharacterCreation = () => {
       wisdom: 10,
       charisma: 10,
     },
-    // ... (other character properties)
   });
 
   const handleChange = (e) => {
@@ -45,134 +44,170 @@ const CharacterCreation = () => {
     }));
   };
 
+  const StatBox = ({ stat, value, onChange }) => (
+    <div className="relative flex flex-col items-center p-4 border-2 border-gray-700 rounded-lg bg-opacity-50 bg-gray-100">
+      <label className="absolute -top-3 bg-gray-100 px-2 text-sm font-medieval text-gray-700 uppercase">
+        {stat}
+      </label>
+      <input
+        type="number"
+        name={stat}
+        value={value}
+        onChange={onChange}
+        className="w-16 h-16 text-2xl text-center border-2 border-gray-700 rounded-full bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <span className="mt-2 text-sm font-bold">
+        Modifier: {Math.floor((value - 10) / 2)}
+      </span>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-beige-light p-8">
-      <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-lg p-8" style={{background: '#F5E6D3'}}>
-        <h1 className="text-4xl font-bold text-green-dark mb-8 text-center">Character Sheet</h1>
-        
-        <div className="grid grid-cols-3 gap-8">
-          <div className="col-span-1">
-            <h2 className="text-2xl font-semibold text-green-dark mb-4">Basic Info</h2>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="name" className="block text-slate-dark mb-1">Name</label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={character.name}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
-                />
-              </div>
-              <div>
-                <label htmlFor="class" className="block text-slate-dark mb-1">Class & Level</label>
-                <div className="flex space-x-2">
-                  <select
-                    id="class"
-                    name="class"
-                    value={character.class}
+    <div className="min-h-screen bg-[#2c3e50] py-8 px-4">
+      <div className="max-w-7xl mx-auto bg-parchment rounded-lg shadow-2xl border-4 border-[#8B4513] p-8">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-medieval text-[#8B4513] border-b-2 border-[#8B4513] pb-2">
+            Character Creation
+          </h1>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Left Column - Character Form */}
+          <div className="space-y-6">
+            {/* Basic Information Section */}
+            <div className="bg-white bg-opacity-60 rounded-lg p-4 border-2 border-[#8B4513]">
+              <h2 className="text-xl font-medieval text-[#8B4513] mb-4">Basic Information</h2>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-bold mb-1">Character Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={character.name}
                     onChange={handleChange}
-                    className="flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
+                    className="w-full p-2 border-2 border-gray-700 rounded bg-white"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-sm font-bold mb-1">Class</label>
+                    <select
+                      name="class"
+                      value={character.class}
+                      onChange={handleChange}
+                      className="w-full p-2 border-2 border-gray-700 rounded bg-white"
+                    >
+                      <option value="">Select...</option>
+                      {CLASS_OPTIONS.map(option => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold mb-1">Level</label>
+                    <input
+                      type="number"
+                      name="level"
+                      value={character.level}
+                      onChange={handleChange}
+                      className="w-full p-2 border-2 border-gray-700 rounded bg-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold mb-1">Race</label>
+                  <select
+                    name="race"
+                    value={character.race}
+                    onChange={handleChange}
+                    className="w-full p-2 border-2 border-gray-700 rounded bg-white"
                   >
-                    <option value="">Select a class</option>
-                    {CLASS_OPTIONS.map((option) => (
+                    <option value="">Select...</option>
+                    {RACE_OPTIONS.map(option => (
                       <option key={option} value={option}>{option}</option>
                     ))}
                   </select>
-                  <input
-                    type="number"
-                    id="level"
-                    name="level"
-                    value={character.level}
-                  onChange={handleChange}
-                    className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
-                />
-              </div>
-              </div>
-              <div>
-                <label htmlFor="race" className="block text-slate-dark mb-1">Race</label>
-                <select
-                  id="race"
-                  name="race"
-                  value={character.race}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
-                >
-                  <option value="">Select a race</option>
-                  {RACE_OPTIONS.map((option) => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="background" className="block text-slate-dark mb-1">Background</label>
-                <select
-                  id="background"
-                  name="background"
-                  value={character.background}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
-                >
-                  <option value="">Select a background</option>
-                  {BACKGROUND_OPTIONS.map((option) => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="alignment" className="block text-slate-dark mb-1">Alignment</label>
-                <select
-                  id="alignment"
-                  name="alignment"
-                  value={character.alignment}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
-                >
-                  <option value="">Select an alignment</option>
-                  {ALIGNMENT_OPTIONS.map((option) => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
-              </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold mb-1">Background</label>
+                  <select
+                    name="background"
+                    value={character.background}
+                    onChange={handleChange}
+                    className="w-full p-2 border-2 border-gray-700 rounded bg-white"
+                  >
+                    <option value="">Select...</option>
+                    {BACKGROUND_OPTIONS.map(option => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold mb-1">Alignment</label>
+                  <select
+                    name="alignment"
+                    value={character.alignment}
+                    onChange={handleChange}
+                    className="w-full p-2 border-2 border-gray-700 rounded bg-white"
+                  >
+                    <option value="">Select...</option>
+                    {ALIGNMENT_OPTIONS.map(option => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
-            <div className="col-span-1">
-            <h2 className="text-2xl font-semibold text-green-dark mb-4">Ability Scores</h2>
-            <div className="grid grid-cols-2 gap-4">
-              {Object.entries(character.stats).map(([stat, value]) => (
-                <div key={stat} className="text-center bg-gold bg-opacity-20 rounded-lg p-2">
-                  <label htmlFor={stat} className="block text-slate-dark mb-1 capitalize font-bold">{stat}</label>
-                  <input
-                    type="number"
-                    id={stat}
-                    name={stat}
+
+            {/* Ability Scores Section */}
+            <div className="bg-white bg-opacity-60 rounded-lg p-4 border-2 border-[#8B4513]">
+              <h2 className="text-xl font-medieval text-[#8B4513] mb-4">Ability Scores</h2>
+              <div className="grid grid-cols-2 gap-4">
+                {Object.entries(character.stats).map(([stat, value]) => (
+                  <StatBox
+                    key={stat}
+                    stat={stat}
                     value={value}
                     onChange={handleStatChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold text-center"
                   />
-                  <div className="mt-1 text-sm font-semibold">
-                    Modifier: {Math.floor((value - 10) / 2)}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            </div>
+
+            {/* Character Description Section */}
+            <div className="bg-white bg-opacity-60 rounded-lg p-4 border-2 border-[#8B4513]">
+              <h2 className="text-xl font-medieval text-[#8B4513] mb-4">Character Description</h2>
+              <div>
+                <textarea
+                  name="description"
+                  value={character.description}
+                  onChange={handleChange}
+                  placeholder="Describe your character's appearance, personality, and background story..."
+                  className="w-full h-48 p-3 border-2 border-gray-700 rounded bg-white resize-none"
+                  rows={6}
+                />
+              </div>
             </div>
           </div>
-          <div className="col-span-1">
-            <h2 className="text-2xl font-semibold text-green-dark mb-4">Character Appearance</h2>
-            <textarea
-              id="appearance"
-              name="appearance"
-              value={character.appearance}
-              onChange={handleChange}
-              rows="8"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
-            />
-          </div>
+
+          {/* Right Column - Character Preview */}
+          <div className="bg-white bg-opacity-60 rounded-lg border-2 border-[#8B4513] p-4 h-full">
+            <h2 className="text-xl font-medieval text-[#8B4513] mb-4">Character Preview</h2>
+            <div className="w-full h-[800px] bg-gray-200 rounded-lg flex items-center justify-center">
+              <p className="text-gray-500 italic">Character preview will appear here</p>
+            </div>
           </div>
         </div>
+      </div>
     </div>
   );
 };
 
 export default CharacterCreation;
+
+
+

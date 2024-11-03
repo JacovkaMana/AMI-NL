@@ -198,3 +198,22 @@ use Tailwind CSS
 form background should be visible and be sheet-like
 and foir colors:
 - **Primary Color**:   - Dark Green (#2E3A24) - Represents nature and adventure.- **Secondary Color**:   - Gold (#FFD700) - Symbolizes achievement and treasure.- **Background Color**:   - Light Beige (#F5F5DC) - Provides a warm, inviting backdrop.- **Text Color**:   - Dark Slate Gray (#2F4F4F) - Ensures readability against the background.
+
+
+
+
+
+Sprint 2:
+
+
+Can you make this page look more like a dnd creation page and more in-style with landing page?
+
+
+
+Here is the whole frontend folder:    
+
+Here is src folder with pages and else:   
+
+
+
+Prefer using Tailwind 
