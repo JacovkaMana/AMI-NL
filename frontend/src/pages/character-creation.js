@@ -90,11 +90,15 @@ const CharacterCreation = () => {
       ...acc,
       [skill]: false
     }), {}),
-    proficiencies: {}
+    proficiencies: {},
+    image_path: '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+
+  const [generatedImage, setGeneratedImage] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const calculateModifier = (value) => Math.floor((value - 10) / 2);
 
@@ -221,7 +225,8 @@ const CharacterCreation = () => {
       saving_throws: character.saving_throws,
       skills: character.skills,
       character_class: character.class,
-      subclass: ''
+      subclass: '',
+      image_path: character.image_path,
     };
 
     try {
@@ -287,10 +292,72 @@ const CharacterCreation = () => {
     </div>
   );
 
-  const handleGeneratePreview = () => {
-    // This will be implemented later
-    console.log('Generating preview...');
+  const handleGeneratePreview = async () => {
+    setIsGenerating(true);
+    try {
+      const prompt = `A fantasy character portrait of a ${character.race} ${character.class}. 
+        ${character.description || ''}`;
+
+      const response = await api.post('/api/image-generation/generate', {
+        prompt: prompt
+      });
+
+      if (response.data && response.data.image_path) {
+        const imagePath = response.data.image_path;
+        setGeneratedImage(imagePath);
+        setCharacter(prev => ({
+          ...prev,
+          image_path: imagePath
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to generate image:', error);
+      alert('Failed to generate character preview');
+    } finally {
+      setIsGenerating(false);
+    }
   };
+
+  const renderCharacterPreview = () => (
+    <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">
+      <h2 className="text-xl font-cinzel text-[var(--color-text-primary)] mb-4">Character Preview</h2>
+      <div className="w-full h-[400px] bg-[var(--color-bg-secondary)] rounded-lg flex items-center justify-center border border-[var(--color-border)] overflow-hidden">
+        {isGenerating ? (
+          <div className="flex flex-col items-center space-y-2">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-accent)]"></div>
+            <p className="text-[var(--color-text-primary)] font-roboto">Generating preview...</p>
+          </div>
+        ) : generatedImage ? (
+          <img
+            src={`${process.env.NEXT_PUBLIC_API_URL}/media/${generatedImage}`}
+            alt="Character Preview"
+            className="w-full h-full object-contain"
+            onError={(e) => {
+              console.error('Image failed to load');
+              e.target.src = '/placeholder-character.png'; // Add a placeholder image
+            }}
+          />
+        ) : (
+          <p className="text-[var(--color-text-primary)] italic font-roboto">
+            Character preview will appear here
+          </p>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={handleGeneratePreview}
+        disabled={isGenerating || !character.race || !character.class}
+        className="btn-primary w-full mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {isGenerating ? 'Generating Preview...' : 'Generate Preview'}
+      </button>
+      {(!character.race || !character.class) && (
+        <p className="text-sm text-[var(--color-text-primary)] opacity-60 mt-2 text-center">
+          Please select a race and class first
+        </p>
+      )}
+    </div>
+  );
 
   return (
     <Layout>
@@ -385,7 +452,9 @@ const CharacterCreation = () => {
             <div className="space-y-6">
               {/* Character Description Section */}
               <div className="bg-[var(--color-bg-secondary)] rounded-lg p-4 border border-[var(--color-border)]">
-                <h2 className="text-xl font-cinzel text-[var(--color-text-primary)] mb-4">Character Description</h2>
+                <h2 className="text-xl font-cinzel text-[var(--color-text-primary)] mb-4">
+                  Character Description
+                </h2>
                 <div className="space-y-4">
                   <textarea
                     name="description"
@@ -395,23 +464,11 @@ const CharacterCreation = () => {
                     className="input-field h-32 resize-none text-[var(--color-text-primary)] placeholder-[var(--color-text-primary)] opacity-60"
                     rows={6}
                   />
-                  <button
-                    type="button"
-                    onClick={handleGeneratePreview}
-                    className="btn-primary w-full"
-                  >
-                    Generate Preview
-                  </button>
                 </div>
               </div>
 
               {/* Character Preview */}
-              <div className="bg-[var(--color-bg-secondary)] rounded-lg border border-[var(--color-border)] p-4">
-                <h2 className="text-xl font-cinzel text-[var(--color-text-primary)] mb-4">Character Preview</h2>
-                <div className="w-full h-[400px] bg-[var(--color-bg-secondary)] rounded-lg flex items-center justify-center border border-[var(--color-border)]">
-                  <p className="text-[var(--color-text-primary)] italic font-roboto">Character preview will appear here</p>
-                </div>
-              </div>
+              {renderCharacterPreview()}
             </div>
           </div>
 
