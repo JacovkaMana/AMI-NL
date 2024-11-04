@@ -42,7 +42,12 @@ async def register(user_data: UserCreate):
         hashed_password=hashed_password,
     ).save()
 
-    return user
+    return UserResponse(
+        uid=user.uid,
+        username=user.username,
+        email=user.email,
+        avatar_path=user.avatar_path,
+    )
 
 
 @router.post("/login", response_model=Token)
@@ -65,4 +70,9 @@ async def login(user_data: UserLogin):
 
 @router.get("/me", response_model=UserResponse)
 async def read_users_me(current_user: User = Depends(get_current_user)):
-    return current_user
+    return UserResponse(
+        uid=current_user.uid,
+        username=current_user.username,
+        email=current_user.email,
+        avatar_path=current_user.avatar_path,
+    )

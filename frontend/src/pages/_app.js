@@ -1,17 +1,14 @@
-import { AuthProvider } from '../context/AuthContext';
-import { ThemeProvider } from '../context/ThemeContext';
+import { ThemeProvider } from '../contexts/ThemeContext';
+import { AuthProvider } from '../contexts/AuthContext';
 import '../styles/globals.css';
-import '../styles/loginModal.css';
-import '../styles/registerModal.css';
-import '../styles/characterCreation.css';
 
 function MyApp({ Component, pageProps }) {
   return (
-    <AuthProvider>
-      <ThemeProvider>
+    <ThemeProvider>
+      <AuthProvider>
         <Component {...pageProps} />
-      </ThemeProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

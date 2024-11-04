@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { useAuth } from '../contexts/AuthContext';
 import Layout from '../components/Layout';
+import { api } from '../utils/api';
 
 const CLASS_OPTIONS = ['Fighter', 'Wizard', 'Rogue', 'Cleric'];
 const RACE_OPTIONS = ['Human', 'Elf', 'Dwarf', 'Orc'];
@@ -43,6 +46,15 @@ const DEFAULT_HP_BY_CLASS = {
 };
 
 const CharacterCreation = () => {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/');
+    }
+  }, [isAuthenticated, router]);
+
   const [character, setCharacter] = useState({
     name: '',
     class: '',
@@ -213,21 +225,9 @@ const CharacterCreation = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:8000/api/characters/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create character');
-      }
-
-      const data = await response.json();
+      const newCharacter = await api.post('/api/characters/', payload);
       alert('Character created successfully!');
-      
+      router.push('/characters');
     } catch (err) {
       setError(err.message);
     } finally {

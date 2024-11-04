@@ -1,13 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { FaSun, FaMoon } from 'react-icons/fa';
 
 const Layout = ({ children }) => {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const { isDarkMode, toggleTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
 
   const handleLogout = () => {
     logout();
@@ -36,7 +45,7 @@ const Layout = ({ children }) => {
                 <FaMoon className="text-[var(--color-text-primary)] w-5 h-5" />
               )}
             </button>
-            {user && (
+            {isAuthenticated ? (
               <>
                 <button
                   onClick={() => router.push('/characters')}
@@ -49,6 +58,21 @@ const Layout = ({ children }) => {
                   className="btn-secondary"
                 >
                   Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => router.push('/auth/login')}
+                  className="btn-secondary"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => router.push('/auth/register')}
+                  className="btn-primary"
+                >
+                  Register
                 </button>
               </>
             )}

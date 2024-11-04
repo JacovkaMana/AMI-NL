@@ -1,45 +1,58 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
+import { api } from '../utils/api';
 
 const Characters = () => {
   const [characters, setCharacters] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const router = useRouter();
-  const { user } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
+    console.log('Auth state:', isAuthenticated);
+
+    if (!isAuthenticated) {
+      router.push('/auth/login');
+      return;
+    }
+
     const fetchCharacters = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/characters/me', {
-          headers: {
-            'Authorization': `Bearer ${user?.token}`
-          }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setCharacters(data);
+        const response = await api.get('/api/characters/me');
+        if (!response.data) {
+          setError('No data received from server');
+          return;
         }
-      } catch (error) {
-        console.error('Error fetching characters:', error);
-      } finally {
+        setCharacters(response.data);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching characters:', err);
+        setError('Failed to load characters. Please try again later.');
         setLoading(false);
       }
     };
 
-    if (user?.token) {
-      fetchCharacters();
-    }
-  }, [user]);
+    fetchCharacters();
+  }, [isAuthenticated, router]);
 
   if (loading) {
     return (
       <Layout>
-        <div className="flex justify-center items-center min-h-[80vh]">
-          <div className="animate-pulse text-[var(--color-text-primary)] font-roboto">
-            Loading characters...
-          </div>
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-[var(--color-text-primary)]">Loading characters...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-red-500">{error}</div>
         </div>
       </Layout>
     );
@@ -47,11 +60,9 @@ const Characters = () => {
 
   return (
     <Layout>
-      <div className="py-12 px-4 max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-12">
-          <h1 className="text-[2.25rem] font-cinzel font-bold text-[var(--color-text-primary)]">
-            Your Characters
-          </h1>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-cinzel text-[var(--color-text-primary)]">My Characters</h1>
           <button
             onClick={() => router.push('/character-creation')}
             className="btn-primary"
@@ -61,38 +72,23 @@ const Characters = () => {
         </div>
 
         {characters.length === 0 ? (
-          <div className="text-center py-12 bg-[var(--color-bg-secondary)] 
-                        rounded-lg border border-[var(--color-border)]
-                        shadow-md">
-            <p className="text-[var(--color-text-primary)] font-roboto mb-6">
-              You haven't created any characters yet.
-            </p>
-            <button
-              onClick={() => router.push('/character-creation')}
-              className="btn-secondary"
-            >
-              Create Your First Character
-            </button>
+          <div className="text-center py-8">
+            <p className="text-[var(--color-text-primary)]">No characters found. Create your first character!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {characters.map((character) => (
               <div
                 key={character.id}
-                className="bg-[var(--color-bg-secondary)] p-8 rounded-lg 
-                         border border-[var(--color-border)] hover:border-[var(--color-accent)]
-                         transition-colors duration-200 cursor-pointer shadow-md
-                         hover:shadow-lg"
+                className="bg-[var(--color-bg-secondary)] p-6 rounded-lg border border-[var(--color-border)] hover:shadow-lg transition-shadow cursor-pointer"
                 onClick={() => router.push(`/characters/${character.id}`)}
               >
-                <h2 className="text-[1.25rem] font-cinzel font-bold text-[var(--color-text-primary)] mb-4">
-                  {character.name}
-                </h2>
-                <p className="text-[var(--color-text-primary)] font-roboto mb-3">
-                  Level {character.level} {character.race} {character.character_class}
+                <h2 className="text-xl font-cinzel text-[var(--color-text-primary)] mb-2">{character.name}</h2>
+                <p className="text-[var(--color-text-secondary)] mb-2">
+                  Level {character.level} {character.character_class}
                 </p>
-                <p className="text-[var(--color-text-primary)] text-sm font-roboto italic">
-                  {character.background}
+                <p className="text-[var(--color-text-secondary)]">
+                  {character.race} • {character.background}
                 </p>
               </div>
             ))}

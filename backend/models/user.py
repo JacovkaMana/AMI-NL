@@ -4,6 +4,7 @@ from neomodel import (
     RelationshipTo,
     EmailProperty,
     DateTimeProperty,
+    UniqueIdProperty,
 )
 from datetime import datetime
 import os
@@ -12,9 +13,9 @@ import shutil
 
 
 class User(StructuredNode):
-    uid = StringProperty(unique_index=True)
+    uid = UniqueIdProperty()
     username = StringProperty(unique_index=True, required=True)
-    email = EmailProperty(unique_index=True, required=True)
+    email = StringProperty(unique_index=True, required=True)
     hashed_password = StringProperty(required=True)
     created_at = DateTimeProperty(default=datetime.utcnow)
     avatar_path = StringProperty(default="")
@@ -33,7 +34,7 @@ class User(StructuredNode):
             media_dir.mkdir(parents=True, exist_ok=True)
 
             file_extension = avatar_file.filename.split(".")[-1]
-            avatar_path = f"media/users/{self.uid}.{file_extension}"
+            avatar_path = f"media/users/{self.uid}_avatar.{file_extension}"
 
             with open(avatar_path, "wb") as buffer:
                 shutil.copyfileobj(avatar_file.file, buffer)

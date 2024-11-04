@@ -13,6 +13,15 @@
   --color-accent: #FFD700; /* gold */
   --color-accent-hover: #F4C430;
   --color-bg-error: #fff5f5;
+
+  /* Light theme (Day mode) */
+  .light-theme {
+    --color-primary-button: #4a5568;
+    --color-primary-button-text: #ffffff;
+    --color-secondary-button: #2d3748;
+    --color-secondary-button-text: #ffffff;
+    /* ... other variables ... */
+  }
 }
 
 [data-theme='dark'] {
@@ -106,6 +115,19 @@
     @apply w-full px-4 py-2 rounded-lg border border-[var(--color-border)]
     bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]
     focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)];
+  }
+
+  /* Button base styles */
+  .btn-primary {
+    @apply px-4 py-2 rounded-lg font-medium transition-colors duration-200;
+    background-color: var(--color-primary-button);
+    color: var(--color-primary-button-text);
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 rounded-lg font-medium transition-colors duration-200;
+    background-color: var(--color-secondary-button);
+    color: var(--color-secondary-button-text);
   }
 }
 

@@ -1,52 +1,44 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { useAuth } from '../contexts/AuthContext';
 import Layout from '../components/Layout';
-import LoginModal from '../components/LoginModal';
-import RegisterModal from '../components/RegisterModal';
-import { useAuth } from '../context/AuthContext';
 
-const Home = () => {
-    const router = useRouter();
-    const { user } = useAuth();
-    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-    const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+export default function Home() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
 
-    useEffect(() => {
-        if (user) {
-            router.push('/characters');
-        }
-    }, [user, router]);
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/characters');
+    }
+  }, [isAuthenticated, router]);
 
-    return (
-        <Layout>
-            <div className="flex flex-col items-center justify-center min-h-[80vh] text-center">
-                <div className="bg-[var(--color-bg-secondary)] p-12 rounded-lg border border-[var(--color-border)] shadow-2xl max-w-3xl">
-                    <h1 className="mb-8 text-[var(--color-text-primary)]">
-                        Welcome to D&D Character Creation & Chat
-                    </h1>
-                    <p className="max-w-2xl mb-12 text-lg text-[var(--color-text-secondary)] font-roboto">
-                        Create your character, join chat rooms, and embark on epic adventures with fellow players.
-                    </p>
-                    <div className="space-x-6">
-                        <button
-                            onClick={() => setIsLoginModalOpen(true)}
-                            className="btn-primary"
-                        >
-                            Login
-                        </button>
-                        <button
-                            onClick={() => setIsRegisterModalOpen(true)}
-                            className="btn-secondary"
-                        >
-                            Register
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <LoginModal isOpen={isLoginModalOpen} onRequestClose={() => setIsLoginModalOpen(false)} />
-            <RegisterModal isOpen={isRegisterModalOpen} onRequestClose={() => setIsRegisterModalOpen(false)} />
-        </Layout>
-    );
-};
-
-export default Home;
+  return (
+    <Layout>
+      <div className="flex flex-col justify-center items-center min-h-screen">
+        <h1 className="text-4xl font-cinzel text-[var(--color-text-primary)] mb-8">
+          Welcome to D&D Character Creator
+        </h1>
+        <p className="text-[var(--color-text-secondary)] mb-8">
+          Create and manage your D&D characters with ease
+        </p>
+        {!isAuthenticated && (
+          <div className="flex space-x-4">
+            <button
+              onClick={() => router.push('/auth/login')}
+              className="btn-secondary px-8 py-3"
+            >
+              Login
+            </button>
+            <button
+              onClick={() => router.push('/auth/register')}
+              className="btn-primary px-8 py-3"
+            >
+              Register
+            </button>
+          </div>
+        )}
+      </div>
+    </Layout>
+  );
+}
