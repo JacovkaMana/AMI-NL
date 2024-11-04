@@ -320,9 +320,17 @@ Recheck all imports
 ```
 
 
-
+```
 Please make all the text the same color in night mode on this page @character-creation.js 
 
 Right now Abilities like Athletics and Arcana are green, but they should be the same color as other text 
 
 Also remove bold fonts
+```
+
+
+```
+@backend 
+
+Let's add some more logic in @image_generation.py , we will make another request to generate a better prompt for diffusion model
+```
