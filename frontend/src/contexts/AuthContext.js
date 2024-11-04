@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../utils/api';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
@@ -9,11 +10,9 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if token exists in localStorage
     const token = localStorage.getItem('token');
     if (token) {
       setIsAuthenticated(true);
-      // Optionally fetch user data
       fetchUserData();
     }
     setLoading(false);
@@ -21,10 +20,12 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await api.post('/api/auth/login', { email, password });
-      console.log('Login response:', response);
+      const response = await api.post('/api/auth/login', { 
+        email, 
+        password 
+      });
       
-      const token = response?.access_token || response?.data?.access_token;
+      const token = response.data.access_token;
       
       if (!token) {
         throw new Error('No access token received from server');
@@ -33,7 +34,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', token);
       setIsAuthenticated(true);
       await fetchUserData();
-      return response;
+      return response.data;
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -45,20 +46,11 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post('/api/auth/register', {
         email,
         password,
-        username,
+        username
       });
-      console.log('Register response:', response);
       
-      const token = response?.access_token || response?.data?.access_token;
-      
-      if (!token) {
-        throw new Error('No access token received from server');
-      }
-
-      localStorage.setItem('token', token);
-      setIsAuthenticated(true);
-      await fetchUserData();
-      return response;
+      const loginResponse = await login(email, password);
+      return loginResponse;
     } catch (error) {
       console.error('Register error:', error);
       throw error;
@@ -73,10 +65,12 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserData = async () => {
     try {
-      const response = await api.get('/api/users/me');
+      const response = await api.get('/api/auth/me');
       setUser(response.data);
+      setLoading(false);
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      setUser(null);
+      setLoading(false);
     }
   };
 

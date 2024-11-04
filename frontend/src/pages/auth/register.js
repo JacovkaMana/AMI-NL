@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../../components/Layout';
 import { useAuth } from '../../contexts/AuthContext';
+import axios from 'axios';
 
 const Register = () => {
   const router = useRouter();
@@ -38,7 +39,7 @@ const Register = () => {
       await register(formData.email, formData.password, formData.username);
       router.push('/characters');
     } catch (err) {
-      setError(err.message || 'Failed to register. Please try again.');
+      setError(err.response?.data?.message || 'Failed to register. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

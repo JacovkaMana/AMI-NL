@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Layout from '../../components/Layout';
 import { api } from '../../utils/api';
 import { useAuth } from '../../contexts/AuthContext';
+import axios from 'axios';
 
 const Login = () => {
   const router = useRouter();
@@ -31,7 +32,7 @@ const Login = () => {
       await login(formData.email, formData.password);
       router.push('/characters');
     } catch (err) {
-      setError(err.message || 'Failed to login. Please try again.');
+      setError(err.response?.data?.message || 'Failed to login. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

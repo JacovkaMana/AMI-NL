@@ -1,89 +1,66 @@
 from pydantic import BaseModel
-from typing import List, Optional, Dict
-from models.enums import Race, CharacterClass, Alignment, Size
+from typing import Optional, Dict
 
 
 class CharacterBase(BaseModel):
-    name: Optional[str] = None
-    race: Optional[Race] = None
-    alignment: Optional[Alignment] = None
-    size: Optional[Size] = None
+    name: str
+    race: str
+    character_class: str
+    level: int = 1
+    alignment: Optional[str] = None
+    size: Optional[str] = None
     description: Optional[str] = None
     background: Optional[str] = None
+    subclass: Optional[str] = None
 
     # Base stats
-    strength: Optional[int] = None
-    dexterity: Optional[int] = None
-    constitution: Optional[int] = None
-    intelligence: Optional[int] = None
-    wisdom: Optional[int] = None
-    charisma: Optional[int] = None
+    strength: int = 10
+    dexterity: int = 10
+    constitution: int = 10
+    intelligence: int = 10
+    wisdom: int = 10
+    charisma: int = 10
 
     # Derived stats
-    armor_class: Optional[int] = None
-    initiative: Optional[int] = None
-    speed: Optional[int] = None
-    hit_points: Optional[int] = None
-    temp_hit_points: Optional[int] = None
-    hit_dice: Optional[str] = None
+    armor_class: int = 10
+    initiative: int = 0
+    speed: int = 30
+    hit_points: int = 0
+    temp_hit_points: int = 0
+    hit_dice: str = "1d8"
 
-    # Proficiencies
+    # Optional JSON fields
     saving_throws: Optional[Dict[str, bool]] = None
     skills: Optional[Dict[str, bool]] = None
 
-    class Config:
-        use_enum_values = True
-
 
 class CharacterCreate(CharacterBase):
-    name: str
-    race: Race
-    character_class: CharacterClass
-    subclass: Optional[str] = None
-    alignment: Alignment
-    size: Size
-
-    # Required base stats
-    strength: int
-    dexterity: int
-    constitution: int
-    intelligence: int
-    wisdom: int
-    charisma: int
+    pass
 
 
 class CharacterUpdate(CharacterBase):
-    character_class: Optional[CharacterClass] = None
-    subclass: Optional[str] = None
-    level: Optional[int] = None
+    pass
 
 
 class CharacterSchema(CharacterBase):
     uid: str
-    name: str
-    race: Race
-    level: int
-    alignment: Alignment
-    size: Size
-
-    # All stats are included from CharacterBase
-    # Additional fields
-    image_path: Optional[str]
-    icon_path: Optional[str]
-
-    # Include modifiers in response
-    ability_modifiers: Dict[str, int]
+    image_path: Optional[str] = None
+    icon_path: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class CharacterStatsResponse(BaseModel):
-    base_stats: Dict[str, int]
+    ability_scores: Dict[str, int]
     modifiers: Dict[str, int]
-    derived_stats: Dict[str, int]
+    armor_class: int
+    initiative: int
+    speed: int
+    hit_points: int
+    temp_hit_points: int
     saving_throws: Dict[str, bool]
     skills: Dict[str, bool]
 
     class Config:
-        orm_mode = True
+        from_attributes = True

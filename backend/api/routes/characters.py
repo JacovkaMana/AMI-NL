@@ -20,64 +20,49 @@ router = APIRouter(
     "/",
     response_model=CharacterSchema,
     status_code=status.HTTP_201_CREATED,
-    summary="Create character",
-    description="Create a new character for the current user",
 )
 async def create_character(
     character_data: CharacterCreate, current_user: User = Depends(get_current_user)
 ):
-    """
-    Create a new character with the following information:
+    try:
+        # Convert Pydantic model to dict
+        character_dict = character_data.dict(exclude_unset=True)
 
-    - **name**: Character name
-    - **race**: Character race
-    - **character_class**: Character's class
-    - **alignment**: Character's alignment
-    - **size**: Character's size
-    - **ability_scores**: Character's ability scores
-    - **description**: Character description (optional)
-    - **background**: Character background (optional)
-    - **subclass**: Character subclass (optional)
-    """
-    return CharacterService.create_character(character_data, current_user)
+        # Create the character
+        character = CharacterService.create_character(character_dict, current_user)
+        return character.to_dict()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error creating character: {str(e)}",
+        )
 
 
 @router.get(
     "/me",
     response_model=list[CharacterSchema],
-    summary="Get my characters",
-    description="Get all characters owned by the current user",
 )
 async def get_my_characters(current_user: User = Depends(get_current_user)):
-    """
-    Get all characters owned by the current user
-    """
-    return current_user.characters.all()
+    """Get all characters owned by the current user"""
+    characters = current_user.characters.all()
+    return [char.to_dict() for char in characters]
 
 
 @router.get(
     "/{uid}",
     response_model=CharacterSchema,
-    summary="Get character",
-    description="Retrieve a specific character's information",
 )
 async def get_character(uid: str, current_user: User = Depends(get_current_user)):
-    """
-    Get character information by UID:
-
-    - **uid**: Unique identifier of the character
-    """
     character = CharacterService.get_character(uid)
     if not character:
         raise HTTPException(status_code=404, detail="Character not found")
 
-    # Check if user owns the character
     if not any(rel.end_node.uid == current_user.uid for rel in character.owner):
         raise HTTPException(
             status_code=403, detail="Not authorized to view this character"
         )
 
-    return character
+    return character.to_dict()
 
 
 @router.patch(
@@ -139,7 +124,7 @@ async def update_character(
     updated_character = CharacterService.update_character(uid, character_data)
     if not updated_character:
         raise HTTPException(status_code=404, detail="Character not found")
-    return updated_character
+    return updated_character.to_dict()
 
 
 @router.delete(

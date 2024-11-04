@@ -1,4 +1,4 @@
-from neomodel import StructuredNode, StringProperty, IntegerProperty, ArrayProperty
+from neomodel import StructuredNode, StringProperty, IntegerProperty
 from .enums import SpellSchool
 
 
@@ -8,14 +8,11 @@ class Spell(StructuredNode):
     school = StringProperty()
     casting_time = StringProperty()
     range = StringProperty()
-    components = ArrayProperty()
     duration = StringProperty()
     description = StringProperty()
     higher_levels = StringProperty()
 
-    @classmethod
-    def create(cls, **kwargs):
-        if "school" in kwargs:
-            if kwargs["school"] not in [s.value for s in SpellSchool]:
-                raise ValueError(f"Invalid spell school: {kwargs['school']}")
-        return super().create(**kwargs)
+    def pre_save(self):
+        """Validate enum values before saving"""
+        if self.school and self.school not in [s.value for s in SpellSchool]:
+            raise ValueError(f"Invalid spell school: {self.school}")
