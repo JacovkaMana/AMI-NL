@@ -398,7 +398,7 @@ const CharacterCreation = () => {
                   <button
                     type="button"
                     onClick={handleGeneratePreview}
-                    className="w-full py-2 px-4 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-bold rounded-lg shadow transition duration-200 ease-in-out transform hover:-translate-y-1"
+                    className="btn-primary w-full"
                   >
                     Generate Preview
                   </button>
@@ -424,7 +424,7 @@ const CharacterCreation = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 px-6 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-bold rounded-lg shadow-lg transition duration-200 ease-in-out transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+              className="btn-secondary w-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Creating Character...' : 'Create Character'}
             </button>
