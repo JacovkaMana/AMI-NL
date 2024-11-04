@@ -251,3 +251,78 @@ Scan @index.js and @character-creation.js to see how we done styling in there
 
 Prefer Tailwind 
 Use Global css
+
+
+
+
+
+
+Sprint 3:
+
+```
+Here's the endpoint for creating a Character on our backend:
+
+http://localhost:8000/api/characters/
+
+And the body example of this endpoint:
+{
+  "name": "string",
+  "race": "Dragonborn",
+  "alignment": "Unaligned",
+  "size": "Tiny",
+  "description": "string",
+  "background": "string",
+  "strength": 0,
+  "dexterity": 0,
+  "constitution": 0,
+  "intelligence": 0,
+  "wisdom": 0,
+  "charisma": 0,
+  "armor_class": 0,
+  "initiative": 0,
+  "speed": 0,
+  "hit_points": 0,
+  "temp_hit_points": 0,
+  "hit_dice": "string",
+  "saving_throws": {
+    "additionalProp1": true,
+    "additionalProp2": true,
+    "additionalProp3": true
+  },
+  "skills": {
+    "additionalProp1": true,
+    "additionalProp2": true,
+    "additionalProp3": true
+  },
+  "character_class": "Barbarian",
+  "subclass": "string"
+}
+
+
+Let's add this to our @character-creation.js form in @frontend folder and also adjust form a bit for it to include everything that's not default for a 1-lvl character
+```
+
+
+```
+Now let's fix our user flow a bit in my @frontend folder
+Pages are in @src folder
+
+I shouldn't need to Login every time i reload the page, it should remember me
+After Login or Register on the same page i should view my characters, here is the endpoint: http://localhost:8000/api/characters/me
+Then when viewing my characters i should be able to create a new one, and then be redirected to the character creation page
+On every page there should be a button to go back to the landing page and a logout button
+
+Please use the same styles that's already there in @character-creation.js and @index.js 
+This project is using Next
+Prefer Tailwind 
+Use global CSS
+Recheck all imports
+```
+
+
+
+Please make all the text the same color in night mode on this page @character-creation.js 
+
+Right now Abilities like Athletics and Arcana are green, but they should be the same color as other text 
+
+Also remove bold fonts

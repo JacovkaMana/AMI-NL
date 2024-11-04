@@ -1,40 +1,63 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/router';
+import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import { FaSun, FaMoon } from 'react-icons/fa';
 
 const Layout = ({ children }) => {
-    const [theme, setTheme] = useState('light');
-    
-    const toggleTheme = () => {
-        const newTheme = theme === 'light' ? 'dark' : 'light';
-        setTheme(newTheme);
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-    };
+  const router = useRouter();
+  const { user, logout } = useAuth();
+  const { isDarkMode, toggleTheme } = useTheme();
 
-    useEffect(() => {
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        setTheme(savedTheme);
-        document.documentElement.setAttribute('data-theme', savedTheme);
-    }, []);
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
 
-    return (
-        <div className="min-h-screen bg-[var(--color-bg-primary)]">
-            <nav className="p-4 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
-                <div className="max-w-7xl mx-auto flex justify-between items-center">
-                    <h1 className="text-2xl font-cinzel text-[var(--color-text-primary)]">D&D Companion</h1>
-                    <button
-                        onClick={toggleTheme}
-                        className="p-2 rounded-lg border border-[var(--color-border)] text-[var(--color-text-primary)]"
-                    >
-                        {theme === 'light' ? '🌙' : '☀️'}
-                    </button>
-                </div>
-            </nav>
-            <main className="container mx-auto px-4 bg-[var(--color-bg-primary)]">
-                {children}
-            </main>
+  return (
+    <div className="min-h-screen bg-[var(--color-bg-primary)]">
+      <nav className="bg-[var(--color-bg-secondary)] border-b border-[var(--color-border)] py-4">
+        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
+          <button
+            onClick={() => router.push('/')}
+            className="text-xl font-cinzel text-[var(--color-text-primary)]"
+          >
+            D&D Character Creator
+          </button>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-full hover:bg-[var(--color-bg-hover)] transition-colors"
+              aria-label="Toggle theme"
+            >
+              {isDarkMode ? (
+                <FaSun className="text-[var(--color-text-primary)] w-5 h-5" />
+              ) : (
+                <FaMoon className="text-[var(--color-text-primary)] w-5 h-5" />
+              )}
+            </button>
+            {user && (
+              <>
+                <button
+                  onClick={() => router.push('/characters')}
+                  className="btn-secondary"
+                >
+                  My Characters
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="btn-secondary"
+                >
+                  Logout
+                </button>
+              </>
+            )}
+          </div>
         </div>
-    );
+      </nav>
+      <main>{children}</main>
+    </div>
+  );
 };
 
 export default Layout;

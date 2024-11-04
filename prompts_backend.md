@@ -102,3 +102,37 @@ Register fields -  Username Email Password
 
 It should be a jwt system
  
+
+# Sprint 3 
+
+```
+Let's add some functionality to our backend located in @backend folder
+
+Every registered user can have multiple characters
+
+User model should have a method that updates profile with profile avatar or changes username 
+
+Characters should also have two images: image and an icon 
+
+For now we can store images locally on in some folder
+```
+
+```
+Let's add some functionality to our backend located in @backend folder
+Now let's add more to the character creation
+
+It should have:
+    A character class that is a separate class in database for all characters
+    A sub-class that is a character class in database too and will be a base for all characters
+    Stats
+    A list of spells that each is a separate class in database
+    A list of abilities, that's just fields in character class
+    Items
+    Character Description
+    Character Image
+    Character Icon
+
+Model the relationships yourself, based of how graph database works and how to use it
+
+Update the API endpoints and servicesafter changes
+```

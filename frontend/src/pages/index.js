@@ -1,13 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 import LoginModal from '../components/LoginModal';
 import RegisterModal from '../components/RegisterModal';
+import { useAuth } from '../context/AuthContext';
 
 const Home = () => {
     const router = useRouter();
+    const { user } = useAuth();
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+
+    useEffect(() => {
+        if (user) {
+            router.push('/characters');
+        }
+    }, [user, router]);
 
     return (
         <Layout>
