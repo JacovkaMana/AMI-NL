@@ -1,264 +1,161 @@
-# D&D Character Creation and Chat Room Application Design System
+# D&D Application Design System Documentation
 
-## Overview
-This design system defines the core visual elements and styling principles for the D&D application, based on the implemented character creation page. These guidelines ensure consistency across all pages.
-
-## Design Principles
-- **User-Centric**: Focus on intuitive navigation and form layouts
-- **Depth and Dimension**: Use of shadows and borders for visual hierarchy
-- **Component-Based**: Modular design approach for reusable elements
-- **Responsive Design**: Fluid layouts that adapt to different screen sizes
+## Core Design Philosophy
+- Medieval fantasy aesthetic with modern UI principles
+- Accessibility-first approach
+- Responsive design for all devices
+- Consistent component styling
 
 ## Theme System
 
 ### Light Theme Colors
 ```css
 :root {
-  --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f8f9fa;
-  --color-text-primary: #2F4F4F;
-  --color-border: #e2e8f0;
-  --color-accent: #4A5568;
-  --color-accent-hover: #2D3748;
-  --color-bg-error: #FEE2E2;
-  --color-primary: #7C3AED;
-  --color-primary-dark: #6D28D9;
-  --color-primary-darker: #5B21B6;
-  --color-primary-light: #8B5CF6;
-  --color-primary-lighter: #A78BFA;
-  --color-button-disabled: #E2E8F0;
-  --color-button-disabled-text: #94A3B8;
+  --primary-bg: #ffffff;
+  --secondary-bg: #f8f9fa;
+  --primary-text: #2F4F4F;
+  --accent-color: #7C3AED;
+  --accent-hover: #6D28D9;
+  --error-bg: #FEE2E2;
+  --error-text: #DC2626;
+  --border-color: #e2e8f0;
+  --input-bg: #ffffff;
+  --disabled-bg: #E2E8F0;
+  --disabled-text: #94A3B8;
 }
 ```
 
 ### Dark Theme Colors
 ```css
 :root[data-theme="dark"] {
-  --color-bg-primary: #1a202c;
-  --color-bg-secondary: #2d3748;
-  --color-text-primary: #e2e8f0;
-  --color-border: #4a5568;
-  --color-accent: #90cdf4;
-  --color-accent-hover: #63b3ed;
-  --color-bg-error: #742A2A;
+  --primary-bg: #1a202c;
+  --secondary-bg: #2d3748;
+  --primary-text: #e2e8f0;
+  --accent-color: #818CF8;
+  --accent-hover: #6366F1;
+  --error-bg: #742A2A;
+  --error-text: #FEE2E2;
+  --border-color: #4a5568;
+  --input-bg: #2d3748;
+  --disabled-bg: #4A5568;
+  --disabled-text: #A0AEC0;
 }
 ```
 
 ## Typography
 
-### Font Families
-- **Headings**: 'Cinzel', serif
-  - Used for page titles, section headers, and important labels
-- **Body**: 'Roboto', sans-serif
-  - Used for general text, form inputs, and content
+### Fonts
+- Primary Font: 'Roboto', sans-serif
+- Fantasy Font: 'MedievalSharp', cursive
+- Headers Font: 'Cinzel', serif
 
 ### Font Sizes
-- **Page Title**: 2.25rem (36px)
-- **Section Headers**: 1.25rem (20px)
-- **Body Text**: 1rem (16px)
-- **Small Text**: 0.875rem (14px)
-
-## Spacing System
-- **Base Unit**: 0.25rem (4px)
-- **Common Spacing Values**:
-  - Extra Small: 0.5rem (8px)
-  - Small: 1rem (16px)
-  - Medium: 1.5rem (24px)
-  - Large: 2rem (32px)
-  - Extra Large: 3rem (48px)
-
-## Component Properties
-
-### Borders
-- **Border Radius**:
-  - Small: 0.375rem (6px)
-  - Medium: 0.5rem (8px)
-  - Large: 1rem (16px)
-  - Full: 9999px (for circular elements)
-- **Border Width**:
-  - Default: 1px
-  - Medium: 2px
-  - Heavy: 4px
-
-### Shadows
 ```css
---shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
---shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
---shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
---shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+--text-xs: 0.75rem;    /* 12px */
+--text-sm: 0.875rem;   /* 14px */
+--text-base: 1rem;     /* 16px */
+--text-lg: 1.125rem;   /* 18px */
+--text-xl: 1.25rem;    /* 20px */
+--text-2xl: 1.5rem;    /* 24px */
+--text-3xl: 1.875rem;  /* 30px */
 ```
+
+## Component Styles
 
 ### Buttons
 ```css
-.btn-primary, .btn-secondary, .btn-tertiary {
-  /* Common Base Styles */
-  padding: 0.75rem 1.5rem;
-  font-family: 'Roboto', sans-serif;
-  font-weight: 600;
-  border-radius: 0.5rem;
-  transition: all 200ms ease-in-out;
-  cursor: pointer;
-  letter-spacing: 0.025em;
-  text-transform: uppercase;
-  font-size: 0.875rem;
-  color: var(--color-text-primary);
-  background: var(--color-bg-secondary);
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  transition: all 200ms;
 }
 
 .btn-primary {
-  border: 2px solid var(--color-primary);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-primary:hover {
-  background: var(--color-bg-secondary);
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
+  background: var(--accent-color);
+  color: white;
 }
 
 .btn-secondary {
-  border: 2px solid var(--color-border);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-secondary:hover {
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
-}
-
-.btn-tertiary {
-  border: 1px solid var(--color-border);
-}
-
-.btn-tertiary:hover {
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-sm);
-}
-
-/* Disabled State for all buttons */
-.btn-primary:disabled,
-.btn-secondary:disabled,
-.btn-tertiary:disabled {
-  background: var(--color-button-disabled);
-  color: var(--color-button-disabled-text);
-  border-color: var(--color-button-disabled);
-  cursor: not-allowed;
-  box-shadow: none;
-  transform: none;
-}
-
-/* Focus states for accessibility */
-.btn-primary:focus,
-.btn-secondary:focus,
-.btn-tertiary:focus {
-  outline: none;
-  ring: 2px;
-  ring-offset: 2px;
-  ring-color: var(--color-primary);
+  background: transparent;
+  border: 2px solid var(--accent-color);
+  color: var(--accent-color);
 }
 ```
 
-### Updated Color Variables
+### Form Elements
 ```css
-:root {
-  /* Core Colors */
-  --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f8f9fa;
-  --color-text-primary: #2F4F4F;
-  --color-text-secondary: #4A5568;
-  --color-border: #e2e8f0;
-  
-  /* Button & Interactive Colors */
-  --color-primary: #6366F1;        /* Changed to Indigo */
-  --color-primary-dark: #4F46E5;
-  --color-primary-darker: #4338CA;
-  --color-primary-light: #818CF8;
-  --color-primary-lighter: #A5B4FC;
-  
-  /* Accent Colors */
-  --color-accent: #4A5568;
-  --color-accent-hover: #2D3748;
-  
-  /* State Colors */
-  --color-success: #059669;
-  --color-warning: #D97706;
-  --color-error: #DC2626;
-  --color-bg-error: #FEE2E2;
-  
-  /* Disabled States */
-  --color-button-disabled: #E2E8F0;
-  --color-button-disabled-text: #94A3B8;
-  
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+.input {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  background: var(--input-bg);
+  color: var(--primary-text);
 }
 
-/* Dark Theme Colors */
-:root[data-theme="dark"] {
-  --color-bg-primary: #1a202c;
-  --color-bg-secondary: #2d3748;
-  --color-text-primary: #e2e8f0;
-  --color-text-secondary: #a0aec0;
-  --color-border: #4a5568;
-  
-  /* Button & Interactive Colors - Adjusted for dark theme */
-  --color-primary: #818CF8;
-  --color-primary-dark: #6366F1;
-  --color-primary-darker: #4F46E5;
-  --color-primary-light: #A5B4FC;
-  --color-primary-lighter: #C7D2FE;
-  
-  /* Accent Colors */
-  --color-accent: #90cdf4;
-  --color-accent-hover: #63b3ed;
-  
-  /* State Colors */
-  --color-success: #059669;
-  --color-warning: #D97706;
-  --color-error: #DC2626;
-  --color-bg-error: #742A2A;
+.select {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  background: var(--input-bg);
 }
 ```
 
-## Responsive Breakpoints
-- **Mobile**: < 640px
-- **Tablet**: 768px
-- **Desktop**: 1024px
-- **Large Desktop**: 1280px
+### Cards
+```css
+.card {
+  background: var(--primary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+```
 
-## Animation & Transitions
-- **Duration**: 
-  - Fast: 150ms
-  - Default: 200ms
-  - Slow: 300ms
-- **Timing Functions**:
-  - Default: ease-in-out
-  - Bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55)
+## Layout
 
-## Accessibility Guidelines
-- Maintain WCAG 2.1 AA compliance
-- Minimum contrast ratio of 4.5:1 for normal text
-- Focus states must be clearly visible
-- Interactive elements must be keyboard accessible
-- Support for screen readers through ARIA labels
+### Grid System
+- 12-column grid system
+- Responsive breakpoints:
+  - sm: 640px
+  - md: 768px
+  - lg: 1024px
+  - xl: 1280px
 
-## Implementation Notes
-- Use Tailwind CSS for consistent styling
-- Implement dark mode through data-theme attribute
-- Follow mobile-first responsive approach
-- Maintain component-based architecture
-- Use CSS variables for theme values
+### Spacing Scale
+```css
+--space-1: 0.25rem;  /* 4px */
+--space-2: 0.5rem;   /* 8px */
+--space-3: 0.75rem;  /* 12px */
+--space-4: 1rem;     /* 16px */
+--space-6: 1.5rem;   /* 24px */
+--space-8: 2rem;     /* 32px */
+```
 
-## Updated Button Styles
+## Animation
 
-### Light Theme
-- **Button Text Color**: `var(--color-text-primary)`
-- **Button Background Color**: `var(--color-bg-secondary)`
+### Transitions
+```css
+--transition-fast: 150ms ease-in-out;
+--transition-normal: 200ms ease-in-out;
+--transition-slow: 300ms ease-in-out;
+```
 
-### Dark Theme
-- **Button Text Color**: `var(--color-bg-secondary)`
-- **Button Background Color**: `var(--color-text-primary)`
+### Hover Effects
+- Scale transforms: 1.02 for subtle growth
+- Opacity changes: 0.9 for slight dimming
+- Shadow expansion for depth
+
+## Page-Specific Styles
+
+### Character Creation
+- Three-column layout for desktop
+- Single column for mobile
+- Sticky navigation
+- Progress indicator
+
+### Chat Interface
+- Two-column layout (chat + character sheet)
+- Message bubbles with alternating alignment
+- Typing indicators
+- Character portraits

@@ -9,12 +9,10 @@ const Characters = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    console.log('Auth state:', isAuthenticated);
-
-    if (!isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       router.push('/auth/login');
       return;
     }
@@ -22,27 +20,24 @@ const Characters = () => {
     const fetchCharacters = async () => {
       try {
         const response = await api.get('/api/characters/me');
-        if (!response.data) {
-          setError('No data received from server');
-          return;
-        }
         setCharacters(response.data);
-        setLoading(false);
       } catch (err) {
-        console.error('Error fetching characters:', err);
         setError('Failed to load characters. Please try again later.');
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchCharacters();
-  }, [isAuthenticated, router]);
+    if (isAuthenticated) {
+      fetchCharacters();
+    }
+  }, [isAuthenticated, authLoading, router]);
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <Layout>
         <div className="flex justify-center items-center min-h-screen">
-          <div className="text-[var(--color-text-primary)]">Loading characters...</div>
+          <div className="text-[var(--color-text-primary)]">Loading...</div>
         </div>
       </Layout>
     );

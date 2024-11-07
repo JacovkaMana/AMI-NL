@@ -1,3 +1,4 @@
+import { AuthProvider } from './contexts/AuthContext';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
 import LandingPage from './pages/LandingPage';
@@ -6,8 +7,10 @@ import LandingPage from './pages/LandingPage';
 function App() {
   return (
     <Provider store={store}>
-      {/* Your existing app content */}
-      <LandingPage />
+      <AuthProvider>
+        {/* Your existing app content */}
+        <LandingPage />
+      </AuthProvider>
     </Provider>
   );
 }

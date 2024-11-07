@@ -334,3 +334,14 @@ Also remove bold fonts
 
 Let's add some more logic in @image_generation.py , we will make another request to generate a better prompt for diffusion model
 ```
+
+
+
+Sprint 4:
+
+Now let's work with the Characters page in @frontend folder , when viewing user's characters, he should be able to click on one and move to the character setup page
+
+Follow the docs @project_designdoc.md and @project_frontend.md 
+
+On the character setup page will be general character information, as well as equipment and spell setuip
+

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../../components/Layout';
 import { api } from '../../utils/api';
@@ -7,13 +7,19 @@ import axios from 'axios';
 
 const Login = () => {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, isAuthenticated, loading } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      router.push('/characters');
+    }
+  }, [isAuthenticated, loading, router]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,6 +43,14 @@ const Login = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isAuthenticated) {
+    return null;
+  }
 
   return (
     <Layout>
