@@ -53,13 +53,30 @@ async def get_my_characters(current_user: User = Depends(get_current_user)):
     response_model=CharacterSchema,
 )
 async def get_character(uid: str, current_user: User = Depends(get_current_user)):
+    """
+    Get a specific character by ID
+
+    Args:
+        uid: Character's unique identifier
+        current_user: Current authenticated user
+
+    Returns:
+        CharacterSchema: Character details
+
+    Raises:
+        HTTPException: If character not found or user not authorized
+    """
     character = CharacterService.get_character(uid)
     if not character:
-        raise HTTPException(status_code=404, detail="Character not found")
-
-    if not any(rel.end_node.uid == current_user.uid for rel in character.owner):
         raise HTTPException(
-            status_code=403, detail="Not authorized to view this character"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Character not found"
+        )
+
+    # Correct ownership check
+    if not CharacterService.is_owner(character, current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view this character",
         )
 
     return character.to_dict()

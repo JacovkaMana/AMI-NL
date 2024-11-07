@@ -339,9 +339,26 @@ Let's add some more logic in @image_generation.py , we will make another request
 
 Sprint 4:
 
-Now let's work with the Characters page in @frontend folder , when viewing user's characters, he should be able to click on one and move to the character setup page
+
+Let's fix some bugs in @frontend 
+
+Carefully read the @src folders as some files and functions may already be there
+
+I shouldn't logout out of my account when reloading or switching pages
+
+When i open login page while logged in, i should be redirected to my characters, logging in shouldn't be possible
+
+And when i move to any page while not logged in, i should be redirected to login
+
+
+
+Now let's work with the Characters page in @frontend folder , when viewing user's characters, he should be able to click on character and move to the character setup page
+
+Carefully read the @src folders as some files and functions may already be there
 
 Follow the docs @project_designdoc.md and @project_frontend.md 
 
-On the character setup page will be general character information, as well as equipment and spell setuip
 
+On the character setup page will be general character information, as well as equipment and spell setup
+
+Right now when i click on characters i'm moved to /characters/undefined, it shouldn't work like that

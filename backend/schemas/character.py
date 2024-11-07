@@ -1,12 +1,13 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, Dict
+from enum import Enum
 
 
 class CharacterBase(BaseModel):
     name: str
     race: str
     character_class: str
-    level: int = 1
+    level: int = Field(default=1, ge=1, le=20)
     alignment: Optional[str] = None
     size: Optional[str] = None
     description: Optional[str] = None
@@ -14,24 +15,26 @@ class CharacterBase(BaseModel):
     subclass: Optional[str] = None
 
     # Base stats
-    strength: int = 10
-    dexterity: int = 10
-    constitution: int = 10
-    intelligence: int = 10
-    wisdom: int = 10
-    charisma: int = 10
+    strength: int = Field(default=10, ge=1, le=30)
+    dexterity: int = Field(default=10, ge=1, le=30)
+    constitution: int = Field(default=10, ge=1, le=30)
+    intelligence: int = Field(default=10, ge=1, le=30)
+    wisdom: int = Field(default=10, ge=1, le=30)
+    charisma: int = Field(default=10, ge=1, le=30)
 
     # Derived stats
-    armor_class: int = 10
-    initiative: int = 0
-    speed: int = 30
-    hit_points: int = 0
-    temp_hit_points: int = 0
+    armor_class: int = Field(default=10, ge=1)
+    initiative: int = Field(default=0)
+    speed: int = Field(default=30, ge=0)
+    hit_points: int = Field(default=0, ge=0)
+    temp_hit_points: int = Field(default=0, ge=0)
     hit_dice: str = "1d8"
 
-    # Optional JSON fields
-    saving_throws: Optional[Dict[str, bool]] = None
-    skills: Optional[Dict[str, bool]] = None
+    # Optional fields
+    image_path: Optional[str] = None
+    icon_path: Optional[str] = None
+    saving_throws: Dict[str, bool] = {}
+    skills: Dict[str, bool] = {}
 
 
 class CharacterCreate(CharacterBase):
@@ -39,13 +42,13 @@ class CharacterCreate(CharacterBase):
 
 
 class CharacterUpdate(CharacterBase):
-    pass
+    name: Optional[str] = None
+    race: Optional[str] = None
+    character_class: Optional[str] = None
 
 
 class CharacterSchema(CharacterBase):
     uid: str
-    image_path: Optional[str] = None
-    icon_path: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -61,6 +64,3 @@ class CharacterStatsResponse(BaseModel):
     temp_hit_points: int
     saving_throws: Dict[str, bool]
     skills: Dict[str, bool]
-
-    class Config:
-        from_attributes = True

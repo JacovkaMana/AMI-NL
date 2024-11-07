@@ -5,14 +5,16 @@ from neomodel import (
     JSONProperty,
     RelationshipFrom,
     RelationshipTo,
+    UniqueIdProperty,
 )
 from .enums import Alignment, Size, Race, CharacterClass
 from .spell import Spell
 from .feature import Feature
+from .user import User
 
 
 class Character(StructuredNode):
-    uid = StringProperty(unique_index=True)
+    uid = UniqueIdProperty()
     name = StringProperty(required=True)
     race = StringProperty(required=True)
     character_class = StringProperty(required=True)
@@ -79,7 +81,7 @@ class Character(StructuredNode):
     )
 
     # Relationships
-    owner = RelationshipFrom("User", "OWNS_CHARACTER")
+    owner = RelationshipFrom("models.user.User", "OWNS_CHARACTER")
     spells = RelationshipTo("Spell", "KNOWS_SPELL")
     features = RelationshipTo("Feature", "HAS_FEATURE")
 

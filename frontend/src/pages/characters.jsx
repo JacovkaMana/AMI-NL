@@ -20,8 +20,10 @@ const Characters = () => {
     const fetchCharacters = async () => {
       try {
         const response = await api.get('/api/characters/me');
+        console.log('Characters response:', response.data);
         setCharacters(response.data);
       } catch (err) {
+        console.error('Error fetching characters:', err);
         setError('Failed to load characters. Please try again later.');
       } finally {
         setLoading(false);
@@ -74,9 +76,9 @@ const Characters = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {characters.map((character) => (
               <div
-                key={character.id}
+                key={character.uid}
                 className="bg-[var(--color-bg-secondary)] p-6 rounded-lg border border-[var(--color-border)] hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => router.push(`/characters/${character.id}`)}
+                onClick={() => router.push(`/character/${character.uid}`)}
               >
                 <h2 className="text-xl font-cinzel text-[var(--color-text-primary)] mb-2">{character.name}</h2>
                 <p className="text-[var(--color-text-secondary)] mb-2">

@@ -136,3 +136,18 @@ Model the relationships yourself, based of how graph database works and how to u
 
 Update the API endpoints and servicesafter changes
 ```
+
+
+
+# Sprint 4
+
+
+@backend  fix the character by id request in @api  , it seems to break, backend sends requests like this:
+
+GET /api/characters/0272d967-c58b-4a2d-8b6d-346f4ee77124 
+
+Follow the general api style
+Check the return models for validity
+Recheck imports and create all necessary parts
+
+
