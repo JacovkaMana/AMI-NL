@@ -2,6 +2,7 @@ import uuid
 from typing import Optional, Dict, Any
 from models.character import Character
 from models.user import User
+from models.character_details import CharacterDetails
 
 
 class CharacterService:
@@ -152,3 +153,51 @@ class CharacterService:
     @staticmethod
     def is_owner(character, user):
         return character.owner.is_connected(user)
+
+    @staticmethod
+    async def get_character_by_id(character_id: str):
+        try:
+            character = CharacterDetails.nodes.get_or_none(id=character_id)
+            if not character:
+                return None
+
+            return {
+                "id": character.id,
+                "name": character.name,
+                "character_class": character.character_class,
+                "race": character.race,
+                "background": character.background,
+                "level": character.level,
+                "experience": character.experience,
+                "alignment": character.alignment,
+                "image_url": character.image_url,
+                # Attributes
+                "strength": character.strength,
+                "dexterity": character.dexterity,
+                "constitution": character.constitution,
+                "intelligence": character.intelligence,
+                "wisdom": character.wisdom,
+                "charisma": character.charisma,
+                # Combat Stats
+                "armor_class": character.armor_class,
+                "initiative": character.initiative,
+                "hit_points": character.hit_points,
+                "max_hit_points": character.max_hit_points,
+                "speed": character.speed,
+                # Additional Details
+                "proficiencies": character.proficiencies,
+                "abilities": character.abilities,
+                "saving_throws": character.saving_throws,
+                "skills": character.skills,
+                # Equipment
+                "equipment": character.equipment,
+                "weapons": character.weapons,
+                "armor": character.armor,
+                # Spellcasting
+                "spellcasting_ability": character.spellcasting_ability,
+                "spells_known": character.spells_known,
+                "spell_slots": character.spell_slots,
+            }
+        except Exception as e:
+            print(f"Error getting character: {e}")
+            return None

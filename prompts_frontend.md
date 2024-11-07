@@ -359,6 +359,14 @@ Carefully read the @src folders as some files and functions may already be there
 Follow the docs @project_designdoc.md and @project_frontend.md 
 
 
-On the character setup page will be general character information, as well as equipment and spell setup
 
-Right now when i click on characters i'm moved to /characters/undefined, it shouldn't work like that
+
+
+Now let's edit @[id].jsx a bit, it doesn't show character abilities, image and other parameters
+
+If they are missing, fix @backend  to return these fields as well and then continue fixing frontend
+
+Don't use new libraries, there are Neomodel Neo4j and Fastapi, Neo4j also doesn't need any migrations
+
+Create new model for return full character info in backend
+Check imports and datatypes of Neomodel
