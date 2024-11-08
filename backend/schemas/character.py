@@ -1,13 +1,21 @@
-from pydantic import BaseModel, Field
-from typing import Optional, Dict
-from enum import Enum
+from pydantic import BaseModel
+from typing import Dict, Optional, List
+from schemas.base_character import BaseCharacterBase, BaseCharacterResponse
 
 
-class CharacterBase(BaseModel):
-    name: str
+class CharacterCreate(BaseCharacterBase):
     race: str
     character_class: str
-    level: int = Field(default=1, ge=1, le=20)
+    background: Optional[str] = None
+    subclass: Optional[str] = None
+
+
+class CharacterUpdate(BaseModel):
+    name: Optional[str] = None
+    level: Optional[int] = None
+    experience: Optional[int] = None
+    race: Optional[str] = None
+    character_class: Optional[str] = None
     alignment: Optional[str] = None
     size: Optional[str] = None
     description: Optional[str] = None
@@ -15,52 +23,40 @@ class CharacterBase(BaseModel):
     subclass: Optional[str] = None
 
     # Base stats
-    strength: int = Field(default=10, ge=1, le=30)
-    dexterity: int = Field(default=10, ge=1, le=30)
-    constitution: int = Field(default=10, ge=1, le=30)
-    intelligence: int = Field(default=10, ge=1, le=30)
-    wisdom: int = Field(default=10, ge=1, le=30)
-    charisma: int = Field(default=10, ge=1, le=30)
+    strength: Optional[int] = None
+    dexterity: Optional[int] = None
+    constitution: Optional[int] = None
+    intelligence: Optional[int] = None
+    wisdom: Optional[int] = None
+    charisma: Optional[int] = None
 
     # Derived stats
-    armor_class: int = Field(default=10, ge=1)
-    initiative: int = Field(default=0)
-    speed: int = Field(default=30, ge=0)
-    hit_points: int = Field(default=0, ge=0)
-    temp_hit_points: int = Field(default=0, ge=0)
-    hit_dice: str = "1d8"
-
-    # Optional fields
-    image_path: Optional[str] = None
-    icon_path: Optional[str] = None
-    saving_throws: Dict[str, bool] = {}
-    skills: Dict[str, bool] = {}
+    armor_class: Optional[int] = None
+    initiative: Optional[int] = None
+    speed: Optional[int] = None
+    hit_points: Optional[int] = None
+    temp_hit_points: Optional[int] = None
+    hit_dice: Optional[str] = None
 
 
-class CharacterCreate(CharacterBase):
-    pass
-
-
-class CharacterUpdate(CharacterBase):
-    name: Optional[str] = None
-    race: Optional[str] = None
-    character_class: Optional[str] = None
-
-
-class CharacterSchema(CharacterBase):
-    uid: str
-
-    class Config:
-        from_attributes = True
+class CharacterResponse(BaseCharacterResponse):
+    race: str
+    character_class: str
+    background: Optional[str] = None
+    subclass: Optional[str] = None
+    saving_throws: Dict[str, bool]
+    skills: Dict[str, bool]
 
 
 class CharacterStatsResponse(BaseModel):
     ability_scores: Dict[str, int]
-    modifiers: Dict[str, int]
+    ability_modifiers: Dict[str, int]
+    saving_throws: Dict[str, bool]
+    skills: Dict[str, bool]
+    proficiency_bonus: int
     armor_class: int
     initiative: int
     speed: int
     hit_points: int
     temp_hit_points: int
-    saving_throws: Dict[str, bool]
-    skills: Dict[str, bool]
+    hit_dice: str

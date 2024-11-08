@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, UploadFile, File, Depends
 from services.user_service import UserService
 from schemas.user import UserSchema, UserCreate, UserUpdate
 from models.user import User
-from ..auth import get_current_user
+from api.auth import get_current_user
 
 router = APIRouter(
     prefix="/users",

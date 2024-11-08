@@ -1,13 +1,13 @@
 from fastapi import APIRouter, HTTPException, status, UploadFile, File, Depends
 from services.character_service import CharacterService
 from schemas.character import (
-    CharacterSchema,
     CharacterCreate,
     CharacterUpdate,
+    CharacterResponse,
     CharacterStatsResponse,
 )
 from models.user import User
-from ..auth import get_current_user
+from api.auth import get_current_user
 
 router = APIRouter(
     prefix="/characters",
@@ -18,7 +18,7 @@ router = APIRouter(
 
 @router.post(
     "/",
-    response_model=CharacterSchema,
+    response_model=CharacterResponse,
     status_code=status.HTTP_201_CREATED,
 )
 async def create_character(
@@ -40,7 +40,7 @@ async def create_character(
 
 @router.get(
     "/me",
-    response_model=list[CharacterSchema],
+    response_model=list[CharacterResponse],
 )
 async def get_my_characters(current_user: User = Depends(get_current_user)):
     """Get all characters owned by the current user"""
@@ -50,7 +50,7 @@ async def get_my_characters(current_user: User = Depends(get_current_user)):
 
 @router.get(
     "/{uid}",
-    response_model=CharacterSchema,
+    response_model=CharacterResponse,
 )
 async def get_character(uid: str, current_user: User = Depends(get_current_user)):
     """
@@ -61,7 +61,7 @@ async def get_character(uid: str, current_user: User = Depends(get_current_user)
         current_user: Current authenticated user
 
     Returns:
-        CharacterSchema: Character details
+        CharacterResponse: Character details
 
     Raises:
         HTTPException: If character not found or user not authorized
@@ -114,7 +114,7 @@ async def update_character_images(
 
 @router.put(
     "/{uid}",
-    response_model=CharacterSchema,
+    response_model=CharacterResponse,
     summary="Update character",
     description="Update a specific character's information",
 )
@@ -300,7 +300,7 @@ async def get_character_stats(uid: str, current_user: User = Depends(get_current
 
 @router.patch(
     "/{uid}/stats",
-    response_model=CharacterSchema,
+    response_model=CharacterResponse,
     summary="Update character stats",
     description="Update statistics for a character",
 )
