@@ -62,7 +62,18 @@ class CharacterService:
 
     @staticmethod
     def is_owner(character: Character, user: User) -> bool:
-        return any(rel.end_node.uid == user.uid for rel in character.owner)
+        """
+        Check if user owns the character using Cypher query to ensure correct relationship check
+        """
+        query = """
+        MATCH (c:Character)-[:OWNED_BY]->(u:User)
+        WHERE c.uid = $character_uid AND u.uid = $user_uid
+        RETURN count(c) > 0 as is_owner
+        """
+        results, _ = db.cypher_query(
+            query, {"character_uid": character.uid, "user_uid": user.uid}
+        )
+        return results[0][0]
 
     @staticmethod
     def get_character_stats(uid: str) -> Dict[str, Any]:
