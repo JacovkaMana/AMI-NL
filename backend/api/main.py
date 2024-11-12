@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from .routes import users, characters, monsters, image_generation
+from .routes import users, characters, monsters, image_generation, image_upload
 from .auth import router as auth_router
 
 router = APIRouter()
@@ -17,3 +17,4 @@ router.include_router(users.router)
 router.include_router(characters.router)
 router.include_router(monsters.router)
 router.include_router(image_generation.router)
+router.include_router(image_upload.router)

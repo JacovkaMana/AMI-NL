@@ -21,8 +21,9 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-HUGGING_FACE_API_URL = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
-MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions"
+HUGGING_FACE_API_URL = (
+    "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev"
+)
 HUGGING_FACE_API_KEY = os.getenv("HUGGING_FACE_API_KEY")
 MISTRAL_KEY = os.getenv("MISTRAL_KEY")
 
@@ -30,68 +31,61 @@ headers = {"Authorization": f"Bearer {HUGGING_FACE_API_KEY}"}
 mistral_headers = {"Authorization": f"Bearer {MISTRAL_KEY}"}
 
 
-async def enhance_prompt(original_prompt: str) -> str:
-    """
-    Enhance the original prompt specifically for Stable Diffusion XL,
-    using common trigger words and proper prompt structure
-    """
+@router.post("/enhance")
+async def enhance_text(
+    request: ImageGenerationRequest,
+) -> str:
+    mistral_url = "https://api.mistral.ai/v1/chat/completions"
+
+    # Craft the system and user messages for better prompt enhancement
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a creative writing expert. Your task is to enhance character descriptions by adding vivid details, maintaining the original concept while making it more descriptive and literary. Keep the enhanced version concise but rich in imagery.",
+        },
+        {
+            "role": "user",
+            "content": f"Enhance this character description in a literary style: {request.prompt}",
+        },
+    ]
+
+    payload = {
+        "model": "mistral-tiny",
+        "messages": messages,
+        "max_tokens": 150,
+        "temperature": 0.7,
+    }
+
+    response = requests.post(mistral_url, headers=mistral_headers, json=payload)
+
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to enhance prompt: {response.text}",
+        )
+
     try:
-        response = requests.post(
-            MISTRAL_API_URL,
-            headers=mistral_headers,
-            json={
-                "model": "mistral-tiny",
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": """You are an expert at creating Stable Diffusion prompts. 
-                        Follow these rules strictly:
-                        1. Start with the main subject and its key attributes
-                        2. Add specific art style keywords (e.g., digital art, oil painting, concept art)
-                        3. Include technical aspects (e.g., 8k, ultra detailed, photorealistic)
-                        4. Add lighting and atmosphere details (e.g., volumetric lighting, golden hour)
-                        5. Use Stable Diffusion trigger words like 'masterpiece', 'highly detailed', 'sharp focus'
-                        6. Separate different aspects with commas
-                        7. Keep the most important elements at the start of the prompt
-                        8. Include camera and shot details if relevant
-                        
-                        Example format:
-                        [main subject], [art style], [technical quality], [lighting], [atmosphere], [additional details], masterpiece, highly detailed""",
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Create a Stable Diffusion prompt based on this concept: {original_prompt}",
-                    },
-                ],
-                "temperature": 0.3,  # Lower temperature for more consistent outputs
-                "max_tokens": 200,
-            },
+        # Extract the enhanced text from the Mistral API response
+        enhanced_prompt = response.json()["choices"][0]["message"]["content"]
+        return JSONResponse(
+            {
+                "original_prompt": request.prompt,
+                "enhanced_prompt": enhanced_prompt.strip(),
+            }
+        )
+    except (KeyError, IndexError) as e:
+        print(f"Error parsing Mistral API response: {e}")
+        return JSONResponse(
+            {"original_prompt": request.prompt, "enhanced_prompt": request.prompt}
         )
 
-        if response.status_code != 200:
-            print(f"Error enhancing prompt: {response.text}")
-            return original_prompt
 
-        enhanced_text = response.json()["choices"][0]["message"]["content"].strip()
-        # Add some reliable quality-boosting keywords if they're not already present
-        quality_suffix = (
-            ", masterpiece, highly detailed, sharp focus, 8k uhd, high quality"
-        )
-        final_prompt = (
-            enhanced_text
-            if any(
-                keyword in enhanced_text.lower()
-                for keyword in ["masterpiece", "8k", "highly detailed"]
-            )
-            else enhanced_text + quality_suffix
-        )
-
-        print(f"Enhanced prompt: {final_prompt}")
-        return final_prompt
-
-    except Exception as e:
-        print(f"Error enhancing prompt: {str(e)}")
-        return original_prompt
+async def enhance_prompt(original_prompt: str) -> str:
+    stmt = """
+    Layer 1 (background): depict a fantasy background illustration, with a location and atmosphere fitting the character's description.
+    Layer 2 (foreground): main focus. a 2d digital art of a dnd character. Bold lineart, with sublte shading and flat colors, a highly detailed and clean stylised graphic novel illustration. Upper half body close-up portrait. Character's description:
+    """
+    return stmt + original_prompt
 
 
 @router.post("/generate")
@@ -103,7 +97,8 @@ async def generate_image(
     Generate an image using Hugging Face's Stable Diffusion model with enhanced prompt
     """
     try:
-        # Enhance the original prompt
+
+        # Add the structural prompt
         enhanced_prompt = await enhance_prompt(request.prompt)
 
         # Make request to Hugging Face API with enhanced prompt
@@ -147,6 +142,7 @@ async def generate_image(
         )
 
     except Exception as e:
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )

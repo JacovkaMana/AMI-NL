@@ -1,62 +1,83 @@
-from pydantic import BaseModel
-from typing import Dict, Optional, List
-from schemas.base_character import BaseCharacterBase, BaseCharacterResponse
+from pydantic import BaseModel, Field
+from typing import Optional, Dict
 
 
-class CharacterCreate(BaseCharacterBase):
+class SkillsModel(BaseModel):
+    acrobatics: bool = False
+    animal_handling: bool = Field(default=False, alias="animal-handling")
+    arcana: bool = False
+    athletics: bool = False
+    deception: bool = False
+    history: bool = False
+    insight: bool = False
+    intimidation: bool = False
+    investigation: bool = False
+    medicine: bool = False
+    nature: bool = False
+    perception: bool = False
+    performance: bool = False
+    persuasion: bool = False
+    religion: bool = False
+    sleight_of_hand: bool = Field(default=False, alias="sleight-of-hand")
+    stealth: bool = False
+    survival: bool = False
+
+    class Config:
+        allow_population_by_field_name = True
+        populate_by_name = True
+
+
+class SavingThrowsModel(BaseModel):
+    strength: bool = False
+    dexterity: bool = False
+    constitution: bool = False
+    intelligence: bool = False
+    wisdom: bool = False
+    charisma: bool = False
+
+
+class CharacterCreate(BaseModel):
+    name: str
     race: str
+    alignment: str
+    size: str
+    description: str
+    background: str
     character_class: str
-    background: Optional[str] = None
-    subclass: Optional[str] = None
+    subclass: Optional[str] = ""
+
+    # Stats
+    strength: int = Field(ge=1, le=30)
+    dexterity: int = Field(ge=1, le=30)
+    constitution: int = Field(ge=1, le=30)
+    intelligence: int = Field(ge=1, le=30)
+    wisdom: int = Field(ge=1, le=30)
+    charisma: int = Field(ge=1, le=30)
+
+    # Combat stats
+    armor_class: int = Field(ge=1)
+    initiative: int
+    speed: int = Field(ge=0)
+    hit_points: int = Field(ge=1)
+    temp_hit_points: int = Field(ge=0)
+    hit_dice: str
+
+    # Proficiencies
+    saving_throws: SavingThrowsModel
+    skills: SkillsModel
+
+    # Optional image
+    image_path: Optional[str] = None
 
 
-class CharacterUpdate(BaseModel):
-    name: Optional[str] = None
-    level: Optional[int] = None
-    experience: Optional[int] = None
-    race: Optional[str] = None
-    character_class: Optional[str] = None
-    alignment: Optional[str] = None
-    size: Optional[str] = None
-    description: Optional[str] = None
-    background: Optional[str] = None
-    subclass: Optional[str] = None
-
-    # Base stats
-    strength: Optional[int] = None
-    dexterity: Optional[int] = None
-    constitution: Optional[int] = None
-    intelligence: Optional[int] = None
-    wisdom: Optional[int] = None
-    charisma: Optional[int] = None
-
-    # Derived stats
-    armor_class: Optional[int] = None
-    initiative: Optional[int] = None
-    speed: Optional[int] = None
-    hit_points: Optional[int] = None
-    temp_hit_points: Optional[int] = None
-    hit_dice: Optional[str] = None
+class CharacterResponse(CharacterCreate):
+    uid: str
 
 
-class CharacterResponse(BaseCharacterResponse):
-    race: str
-    character_class: str
-    background: Optional[str] = None
-    subclass: Optional[str] = None
-    saving_throws: Dict[str, bool]
-    skills: Dict[str, bool]
+class CharacterUpdate(CharacterCreate):
+    pass
 
 
 class CharacterStatsResponse(BaseModel):
-    ability_scores: Dict[str, int]
-    ability_modifiers: Dict[str, int]
-    saving_throws: Dict[str, bool]
-    skills: Dict[str, bool]
-    proficiency_bonus: int
-    armor_class: int
-    initiative: int
-    speed: int
-    hit_points: int
-    temp_hit_points: int
-    hit_dice: str
+    # Add stats-specific fields here
+    pass

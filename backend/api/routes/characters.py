@@ -20,21 +20,54 @@ router = APIRouter(
     "/",
     response_model=CharacterResponse,
     status_code=status.HTTP_201_CREATED,
+    responses={
+        400: {
+            "description": "Bad Request",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Error message explaining what went wrong"}
+                }
+            },
+        }
+    },
 )
 async def create_character(
     character_data: CharacterCreate, current_user: User = Depends(get_current_user)
 ):
     try:
-        # Convert Pydantic model to dict
+        # Convert Pydantic model to dict - using dict() for Pydantic v1
         character_dict = character_data.dict(exclude_unset=True)
-
-        # Create the character
-        character = CharacterService.create_character(character_dict, current_user)
-        return character.to_dict()
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Error creating character: {str(e)}",
+            detail={
+                "message": "Error processing character data",
+                "error": str(e),
+            },
+        )
+
+    try:
+        # Create the character
+        character = CharacterService.create_character(character_dict, current_user)
+        return character.to_dict()
+    except ValueError as ve:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "message": "Validation error",
+                "error": str(ve),
+                "data": character_dict,
+            },
+        )
+    except Exception as e:
+        # Log the error here if you have logging set up
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "message": "Error creating character",
+                "error": str(e),
+                "data": character_dict,
+            },
         )
 
 

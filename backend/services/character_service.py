@@ -8,11 +8,28 @@ class CharacterService:
     @staticmethod
     def create_character(character_data: Dict[str, Any], user: User) -> Character:
         try:
-            character = Character(**character_data).save()
-            character.owner.connect(user)
+            # Create character instance but don't save yet
+            character = Character(**character_data)
+
+            # Try to save and catch any database-specific errors
+            try:
+                character.save()
+            except Exception as db_error:
+                raise ValueError(f"Database error: {str(db_error)}")
+
+            # Try to connect owner
+            try:
+                character.owner.connect(user)
+            except Exception as rel_error:
+                # Clean up if owner connection fails
+                character.delete()
+                raise ValueError(f"Error connecting owner: {str(rel_error)}")
+
             return character
+
         except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))
+            # Re-raise with the actual error message
+            raise ValueError(f"Failed to create character: {str(e)}")
 
     @staticmethod
     def get_character(uid: str) -> Optional[Character]:
