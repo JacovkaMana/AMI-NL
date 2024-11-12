@@ -5,6 +5,7 @@ from neomodel import (
     JSONProperty,
     RelationshipTo,
     UniqueIdProperty,
+    RelationshipFrom,
 )
 from models.user import User
 
@@ -44,7 +45,7 @@ class Character(StructuredNode):
     image_path = StringProperty()
 
     # Relationships
-    owner = RelationshipTo(User, "OWNED_BY")
+    owner = RelationshipFrom(User, "OWNED_BY")
 
     def calculate_proficiency_bonus(self):
         # Implement proficiency bonus calculation based on level

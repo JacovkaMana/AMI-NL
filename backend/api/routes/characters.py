@@ -77,7 +77,7 @@ async def create_character(
 )
 async def get_my_characters(current_user: User = Depends(get_current_user)):
     """Get all characters owned by the current user"""
-    characters = current_user.characters.all()
+    characters = CharacterService.get_user_characters(current_user)
     return [char.to_dict() for char in characters]
 
 

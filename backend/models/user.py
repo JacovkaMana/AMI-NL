@@ -5,6 +5,7 @@ from neomodel import (
     EmailProperty,
     DateTimeProperty,
     UniqueIdProperty,
+    RelationshipFrom,
 )
 from datetime import datetime
 import os
@@ -21,7 +22,7 @@ class User(StructuredNode):
     avatar_path = StringProperty(default="")
 
     # Define relationships
-    characters = RelationshipTo(".character.Character", "OWNS_CHARACTER")
+    characters = RelationshipFrom("models.character.Character", "OWNED_BY")
 
     def update_profile(self, avatar_file=None):
         if avatar_file:

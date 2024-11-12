@@ -2,6 +2,7 @@ from typing import Optional, Dict, Any
 from fastapi import HTTPException
 from models.character import Character
 from models.user import User
+from neomodel import db
 
 
 class CharacterService:
@@ -103,3 +104,16 @@ class CharacterService:
 
         character.save()
         return character
+
+    @staticmethod
+    def get_user_characters(user):
+        """
+        Get all characters owned by a user using the OWNED_BY relationship
+        """
+        query = """
+        MATCH (c:Character)-[:OWNED_BY]->(u:User)
+        WHERE u.uid = $uid
+        RETURN c
+        """
+        results, _ = db.cypher_query(query, {"uid": user.uid})
+        return [Character.inflate(row[0]) for row in results]
