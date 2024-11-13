@@ -16,6 +16,10 @@ router = APIRouter(
 )
 
 
+def get_character_service():
+    return CharacterService()
+
+
 @router.post(
     "/",
     response_model=CharacterResponse,
@@ -32,53 +36,29 @@ router = APIRouter(
     },
 )
 async def create_character(
-    character_data: CharacterCreate, current_user: User = Depends(get_current_user)
+    character: CharacterCreate,
+    current_user: User = Depends(get_current_user),
+    character_service: CharacterService = Depends(get_character_service),
 ):
-    try:
-        # Convert Pydantic model to dict - using dict() for Pydantic v1
-        character_dict = character_data.dict(exclude_unset=True)
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "message": "Error processing character data",
-                "error": str(e),
-            },
-        )
+    created_character = character_service.create_character(
+        character_data=character.dict(), user=current_user
+    )
 
-    try:
-        # Create the character
-        character = CharacterService.create_character(character_dict, current_user)
-        return character.to_dict()
-    except ValueError as ve:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "message": "Validation error",
-                "error": str(ve),
-                "data": character_dict,
-            },
-        )
-    except Exception as e:
-        # Log the error here if you have logging set up
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "message": "Error creating character",
-                "error": str(e),
-                "data": character_dict,
-            },
-        )
+    return CharacterResponse.from_orm(created_character)
 
 
 @router.get(
     "/me",
     response_model=list[CharacterResponse],
 )
-async def get_my_characters(current_user: User = Depends(get_current_user)):
+async def get_my_characters(
+    current_user: User = Depends(get_current_user),
+    character_service: CharacterService = Depends(get_character_service),
+):
     """Get all characters owned by the current user"""
-    characters = CharacterService.get_user_characters(current_user)
-    return [char.to_dict() for char in characters]
+    characters = character_service.get_user_characters(current_user)
+    # Use from_orm instead of to_dict to properly validate the response
+    return [CharacterResponse.from_orm(char) for char in characters]
 
 
 @router.get(

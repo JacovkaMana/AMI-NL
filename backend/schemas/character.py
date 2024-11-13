@@ -82,6 +82,12 @@ class CharacterCreate(CharacterBase):
 
 class CharacterResponse(CharacterBase):
     uid: str
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
 
 
 class CharacterUpdate(CharacterBase):
@@ -91,13 +97,13 @@ class CharacterUpdate(CharacterBase):
 class SkillModifier(BaseModel):
     is_proficient: bool
     modifier: int
-    total_bonus: int  # Including proficiency if proficient
+    total_bonus: int
 
 
 class SavingThrowModifier(BaseModel):
     is_proficient: bool
     modifier: int
-    total_bonus: int  # Including proficiency if proficient
+    total_bonus: int
 
 
 class CharacterStatsResponse(BaseModel):
@@ -114,8 +120,8 @@ class CharacterStatsResponse(BaseModel):
     image_path: Optional[str] = None
 
     # Timestamps
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
     deleted_at: Optional[datetime] = None
 
     # Ability Scores and Modifiers
@@ -135,3 +141,7 @@ class CharacterStatsResponse(BaseModel):
     current_hit_points: Optional[int] = None
     temp_hit_points: int
     hit_dice: str
+
+    class Config:
+        orm_mode = True
+        from_attributes = True

@@ -43,27 +43,16 @@ class CharacterService:
             ):
                 character_data["current_hit_points"] = character_data["hit_points"]
 
-            # Create character instance but don't save yet
+            # Create character instance
             character = Character(**character_data)
+            character.save()
 
-            # Try to save and catch any database-specific errors
-            try:
-                character.save()
-            except Exception as db_error:
-                raise ValueError(f"Database error: {str(db_error)}")
-
-            # Try to connect owner
-            try:
-                character.owner.connect(user)
-            except Exception as rel_error:
-                # Clean up if owner connection fails
-                character.delete()
-                raise ValueError(f"Error connecting owner: {str(rel_error)}")
+            # Create the OWNED_BY relationship from character to user
+            character.owner.connect(user)
 
             return character
 
         except Exception as e:
-            # Re-raise with the actual error message
             raise ValueError(f"Failed to create character: {str(e)}")
 
     @staticmethod
@@ -213,7 +202,7 @@ class CharacterService:
         return character
 
     @staticmethod
-    def get_user_characters(user):
+    def get_user_characters(user: User) -> list[Character]:
         """
         Get all characters owned by a user using the OWNED_BY relationship
         """
@@ -223,4 +212,11 @@ class CharacterService:
         RETURN c
         """
         results, _ = db.cypher_query(query, {"uid": user.uid})
-        return [Character.inflate(row[0]) for row in results]
+        characters = [Character.inflate(row[0]) for row in results]
+
+        # Ensure all required fields are present
+        for char in characters:
+            if char.current_hit_points is None:
+                char.current_hit_points = char.hit_points
+
+        return characters
