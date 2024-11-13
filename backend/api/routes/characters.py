@@ -83,7 +83,7 @@ async def get_my_characters(current_user: User = Depends(get_current_user)):
 
 @router.get(
     "/{uid}",
-    response_model=CharacterResponse,
+    response_model=CharacterStatsResponse,
 )
 async def get_character(uid: str, current_user: User = Depends(get_current_user)):
     """
@@ -94,7 +94,7 @@ async def get_character(uid: str, current_user: User = Depends(get_current_user)
         current_user: Current authenticated user
 
     Returns:
-        CharacterResponse: Character details
+        CharacterStatsResponse: Character details with calculated stats
 
     Raises:
         HTTPException: If character not found or user not authorized
@@ -112,7 +112,8 @@ async def get_character(uid: str, current_user: User = Depends(get_current_user)
             detail="Not authorized to view this character",
         )
 
-    return character.to_dict()
+    # Return the detailed stats instead of basic character info
+    return CharacterService.get_character_stats(uid)
 
 
 @router.patch(

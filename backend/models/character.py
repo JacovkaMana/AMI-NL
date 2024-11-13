@@ -6,8 +6,10 @@ from neomodel import (
     RelationshipTo,
     UniqueIdProperty,
     RelationshipFrom,
+    DateTimeProperty,
 )
 from models.user import User
+from datetime import datetime
 
 
 class Character(StructuredNode):
@@ -46,6 +48,12 @@ class Character(StructuredNode):
 
     # Relationships
     owner = RelationshipFrom(User, "OWNED_BY")
+
+    # Additional fields
+    current_hit_points = IntegerProperty()
+    created_at = DateTimeProperty(default=datetime.utcnow)
+    updated_at = DateTimeProperty(default=datetime.utcnow)
+    deleted_at = DateTimeProperty(default=None)
 
     def calculate_proficiency_bonus(self):
         # Implement proficiency bonus calculation based on level
@@ -87,4 +95,8 @@ class Character(StructuredNode):
             "saving_throws": self.saving_throws,
             "skills": self.skills,
             "image_path": self.image_path,
+            "current_hit_points": self.current_hit_points,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+            "deleted_at": self.deleted_at,
         }

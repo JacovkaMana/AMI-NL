@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Dict
+from datetime import datetime
 
 
 class SkillsModel(BaseModel):
@@ -36,7 +37,7 @@ class SavingThrowsModel(BaseModel):
     charisma: bool = False
 
 
-class CharacterCreate(BaseModel):
+class CharacterBase(BaseModel):
     name: str
     race: str
     alignment: str
@@ -69,15 +70,68 @@ class CharacterCreate(BaseModel):
     # Optional image
     image_path: Optional[str] = None
 
+    current_hit_points: Optional[int] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    deleted_at: Optional[datetime] = None
 
-class CharacterResponse(CharacterCreate):
+
+class CharacterCreate(CharacterBase):
+    pass
+
+
+class CharacterResponse(CharacterBase):
     uid: str
 
 
-class CharacterUpdate(CharacterCreate):
+class CharacterUpdate(CharacterBase):
     pass
+
+
+class SkillModifier(BaseModel):
+    is_proficient: bool
+    modifier: int
+    total_bonus: int  # Including proficiency if proficient
+
+
+class SavingThrowModifier(BaseModel):
+    is_proficient: bool
+    modifier: int
+    total_bonus: int  # Including proficiency if proficient
 
 
 class CharacterStatsResponse(BaseModel):
-    # Add stats-specific fields here
-    pass
+    # Basic Info
+    uid: str
+    name: str
+    race: str
+    alignment: str
+    size: str
+    description: str
+    background: str
+    character_class: str
+    subclass: Optional[str] = ""
+    image_path: Optional[str] = None
+
+    # Timestamps
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    deleted_at: Optional[datetime] = None
+
+    # Ability Scores and Modifiers
+    ability_scores: Dict[str, int]
+    ability_modifiers: Dict[str, int]
+
+    # Skills and Saves
+    saving_throws: Dict[str, SavingThrowModifier]
+    skills: Dict[str, SkillModifier]
+    proficiency_bonus: int
+
+    # Combat Stats
+    armor_class: int
+    initiative: int
+    speed: int
+    hit_points: int
+    current_hit_points: Optional[int] = None
+    temp_hit_points: int
+    hit_dice: str
