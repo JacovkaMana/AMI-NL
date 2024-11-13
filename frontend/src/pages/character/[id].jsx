@@ -61,8 +61,7 @@ const CharacterSheet = () => {
   if (!character) return <Layout><div className="container mx-auto p-4">Character not found</div></Layout>;
 
   const calculateModifier = (value) => {
-    const modifier = Math.floor((value - 10) / 2);
-    return modifier >= 0 ? `+${modifier}` : modifier;
+    return value >= 0 ? `+${value}` : value.toString();
   };
 
   return (
@@ -83,10 +82,54 @@ const CharacterSheet = () => {
           
           {/* Basic Info */}
           <div className="md:col-span-2 space-y-4">
-            <h1 className="text-4xl font-bold text-[var(--color-text-primary)]">{character.name}</h1>
+            <div className="space-y-2">
+              <h1 className="text-4xl font-bold text-[var(--color-text-primary)]">{character.name}</h1>
+              
+              {/* Health Bar Section */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center text-sm text-[var(--color-text-secondary)]">
+                  <span>HP</span>
+                  <span className="font-medium">
+                    {character.current_hit_points}/{character.hit_points}
+                    {character.temp_hit_points > 0 && 
+                      <span className="text-blue-400 ml-1">
+                        (+{character.temp_hit_points})
+                      </span>
+                    }
+                  </span>
+                </div>
+                <div className="relative w-full h-2">
+                  {/* Background bar */}
+                  <div className="absolute w-full h-full bg-[var(--color-bg-secondary)] rounded-full" />
+                  
+                  {/* Main HP bar */}
+                  <div 
+                    className="absolute h-full transition-all duration-300 rounded-full bg-[var(--color-text-primary)] opacity-75"
+                    style={{
+                      width: `${(character.current_hit_points / character.hit_points) * 100}%`
+                    }}
+                  />
+                  
+                  {/* Temporary HP bar */}
+                  {character.temp_hit_points > 0 && (
+                    <div 
+                      className="absolute h-full bg-blue-400 opacity-50 transition-all duration-300 rounded-full"
+                      style={{
+                        width: `${(character.temp_hit_points / character.hit_points) * 100}%`,
+                        left: `${(character.current_hit_points / character.hit_points) * 100}%`
+                      }}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-[var(--color-text-secondary)]">Level 1 {character.race} {character.character_class}</p>
+                <p className="text-[var(--color-text-secondary)]">
+                  Level {Math.ceil(character.proficiency_bonus / 2)} {character.race} {character.character_class}
+                  {character.subclass && ` (${character.subclass})`}
+                </p>
                 <p className="text-[var(--color-text-secondary)]">{character.background}</p>
                 <p className="text-[var(--color-text-secondary)]">{character.alignment}</p>
               </div>
@@ -95,6 +138,7 @@ const CharacterSheet = () => {
                 <p className="text-[var(--color-text-secondary)]">Speed: {character.speed} ft.</p>
               </div>
             </div>
+
             <div className="bg-[var(--color-bg-secondary)] p-4 rounded-lg">
               <h3 className="font-bold mb-2 flex justify-between items-center">
                 Description
@@ -136,11 +180,11 @@ const CharacterSheet = () => {
           <div className="bg-[var(--color-bg-secondary)] p-4 rounded-lg">
             <h2 className="text-xl font-bold mb-4">Ability Scores</h2>
             <div className="grid grid-cols-2 gap-4">
-              {['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'].map((ability) => (
+              {Object.entries(character.ability_scores).map(([ability, score]) => (
                 <div key={ability} className="text-center p-2 bg-[var(--color-bg-primary)] rounded">
                   <div className="text-sm uppercase">{ability}</div>
-                  <div className="text-xl font-bold">{character[ability]}</div>
-                  <div className="text-sm">{calculateModifier(character[ability])}</div>
+                  <div className="text-xl font-bold">{score}</div>
+                  <div className="text-sm">{calculateModifier(character.ability_modifiers[ability])}</div>
                 </div>
               ))}
             </div>
@@ -149,20 +193,16 @@ const CharacterSheet = () => {
           {/* Combat Stats */}
           <div className="bg-[var(--color-bg-secondary)] p-4 rounded-lg">
             <h2 className="text-xl font-bold mb-4">Combat</h2>
-            <div className="space-y-2">
-              <div className="flex justify-between">
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
                 <span>Armor Class</span>
                 <span className="font-bold">{character.armor_class}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span>Initiative</span>
-                <span className="font-bold">{character.initiative}</span>
+                <span className="font-bold">{calculateModifier(character.initiative)}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Hit Points</span>
-                <span className="font-bold">{character.hit_points}</span>
-              </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span>Hit Dice</span>
                 <span className="font-bold">{character.hit_dice}</span>
               </div>
@@ -173,30 +213,35 @@ const CharacterSheet = () => {
           <div className="bg-[var(--color-bg-secondary)] p-4 rounded-lg">
             <h2 className="text-xl font-bold mb-4">Saving Throws</h2>
             <div className="space-y-2">
-              {Object.entries(character.saving_throws).map(([ability, proficient]) => (
+              {Object.entries(character.saving_throws).map(([ability, data]) => (
                 <div key={ability} className="flex justify-between">
                   <span className="capitalize">{ability}</span>
-                  <span className={`${proficient ? 'text-green-500' : ''}`}>
-                    {calculateModifier(character[ability])}
+                  <span className={`${data.is_proficient ? 'text-green-500' : ''}`}>
+                    {calculateModifier(data.total_bonus)}
                   </span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Skills */}
+          {/* Updated Skills Section */}
           <div className="bg-[var(--color-bg-secondary)] p-4 rounded-lg">
             <h2 className="text-xl font-bold mb-4">Skills</h2>
-            <div className="space-y-1 text-sm">
-              {Object.entries(character.skills).map(([skill, proficient]) => (
-                <div key={skill} className="flex justify-between">
-                  <span className="capitalize">{skill.replace('-', ' ')}</span>
-                  <span className={`${proficient ? 'text-green-500' : ''}`}>
-                    {calculateModifier(character[skill.includes('strength') ? 'strength' :
-                      skill.includes('dexterity') ? 'dexterity' :
-                      skill.includes('constitution') ? 'constitution' :
-                      skill.includes('intelligence') ? 'intelligence' :
-                      skill.includes('wisdom') ? 'wisdom' : 'charisma'])}
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+              {Object.entries(character.skills).map(([skill, data]) => (
+                <div key={skill} className="flex justify-between items-center">
+                  <span className="flex items-center gap-1">
+                    {data.is_proficient && (
+                      <span className="w-2 h-2 rounded-full bg-green-500"/>
+                    )}
+                    <span className="capitalize">
+                      {skill.split('_').map(word => 
+                        word.charAt(0).toUpperCase() + word.slice(1)
+                      ).join(' ')}
+                    </span>
+                  </span>
+                  <span className={`${data.is_proficient ? 'text-green-500' : ''} font-medium`}>
+                    {calculateModifier(data.total_bonus)}
                   </span>
                 </div>
               ))}
