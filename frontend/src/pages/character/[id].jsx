@@ -85,12 +85,34 @@ const CharacterSheet = () => {
             <div className="space-y-2">
               <h1 className="text-4xl font-bold text-[var(--color-text-primary)]">{character.name}</h1>
               
-              {/* Health Bar Section */}
+              {/* Experience Bar Section */}
               <div className="space-y-1">
+                <div className="flex justify-between items-center text-sm text-[var(--color-text-secondary)]">
+                  <span>Level {character.level}</span>
+                  <span className="font-medium">
+                    {character.experience}/{character.experience + character.experience_to_next_level} XP
+                  </span>
+                </div>
+                <div className="relative w-full h-1.5">
+                  {/* Background bar */}
+                  <div className="absolute w-full h-full bg-[var(--color-bg-secondary)] rounded-full" />
+                  
+                  {/* XP progress bar */}
+                  <div 
+                    className="absolute h-full transition-all duration-300 rounded-full bg-yellow-500/75"
+                    style={{
+                      width: `${(character.experience / (character.experience + character.experience_to_next_level)) * 100}%`
+                    }}
+                  />
+                </div>
+              </div>
+              
+              {/* Health Bar Section */}
+              <div className="space-y-1 mt-3">
                 <div className="flex justify-between items-center text-sm text-[var(--color-text-secondary)]">
                   <span>HP</span>
                   <span className="font-medium">
-                    {character.current_hit_points}/{character.hit_points}
+                    {character.current_hit_points}/{character.hit_points} HP
                     {character.temp_hit_points > 0 && 
                       <span className="text-blue-400 ml-1">
                         (+{character.temp_hit_points})
