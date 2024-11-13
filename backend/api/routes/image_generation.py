@@ -41,11 +41,11 @@ async def enhance_text(
     messages = [
         {
             "role": "system",
-            "content": "You are a creative writing expert. Your task is to enhance character descriptions by adding vivid details, maintaining the original concept while making it more descriptive and literary. Keep the enhanced version concise but rich in imagery.",
+            "content": "You are a visual description expert. Enhance this character description with key visual details in 2-3 concise sentences.",
         },
         {
             "role": "user",
-            "content": f"Enhance this character description in a literary style: {request.prompt}",
+            "content": f"Describe this character's key visual features in 2-3 sentences: {request.prompt}",
         },
     ]
 
