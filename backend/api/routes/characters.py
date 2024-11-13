@@ -40,8 +40,13 @@ async def create_character(
     current_user: User = Depends(get_current_user),
     character_service: CharacterService = Depends(get_character_service),
 ):
+    # Set default experience if not provided
+    character_data = character.dict()
+    character_data["experience"] = character_data.get("experience", 0)
+    character_data["level"] = character_data.get("level", 1)
+
     created_character = character_service.create_character(
-        character_data=character.dict(), user=current_user
+        character_data=character_data, user=current_user
     )
 
     return CharacterResponse.from_orm(created_character)
@@ -57,7 +62,14 @@ async def get_my_characters(
 ):
     """Get all characters owned by the current user"""
     characters = character_service.get_user_characters(current_user)
-    # Use from_orm instead of to_dict to properly validate the response
+
+    # Process each character to ensure experience exists
+    for character in characters:
+        if not hasattr(character, "experience"):
+            character.experience = 0
+            character.level = 1
+            character.save()
+
     return [CharacterResponse.from_orm(char) for char in characters]
 
 
@@ -68,16 +80,6 @@ async def get_my_characters(
 async def get_character(uid: str, current_user: User = Depends(get_current_user)):
     """
     Get a specific character by ID
-
-    Args:
-        uid: Character's unique identifier
-        current_user: Current authenticated user
-
-    Returns:
-        CharacterStatsResponse: Character details with calculated stats
-
-    Raises:
-        HTTPException: If character not found or user not authorized
     """
     character = CharacterService.get_character(uid)
     if not character:
@@ -85,15 +87,18 @@ async def get_character(uid: str, current_user: User = Depends(get_current_user)
             status_code=status.HTTP_404_NOT_FOUND, detail="Character not found"
         )
 
-    # Correct ownership check
+    # Check ownership
     if not CharacterService.is_owner(character, current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to view this character",
         )
 
-    # Return the detailed stats instead of basic character info
-    return CharacterService.get_character_stats(uid)
+    # Get stats (which now includes experience and level)
+    stats = CharacterService.get_character_stats(uid)
+
+    # Convert dict to CharacterStatsResponse
+    return CharacterStatsResponse(**stats)
 
 
 @router.patch(

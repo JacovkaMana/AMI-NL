@@ -75,6 +75,9 @@ class CharacterBase(BaseModel):
     updated_at: Optional[datetime] = None
     deleted_at: Optional[datetime] = None
 
+    experience: Optional[int] = 0
+    level: Optional[int] = 1
+
 
 class CharacterCreate(CharacterBase):
     pass
@@ -141,6 +144,10 @@ class CharacterStatsResponse(BaseModel):
     current_hit_points: Optional[int] = None
     temp_hit_points: int
     hit_dice: str
+
+    experience: int
+    level: int
+    experience_to_next_level: int
 
     class Config:
         orm_mode = True

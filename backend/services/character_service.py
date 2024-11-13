@@ -4,6 +4,7 @@ from models.character import Character
 from models.user import User
 from neomodel import db
 from datetime import datetime
+from schemas.character import CharacterStatsResponse
 
 
 class CharacterService:
@@ -109,10 +110,56 @@ class CharacterService:
         return results[0][0]
 
     @staticmethod
+    def get_experience_for_level(level: int) -> int:
+        """Get the experience threshold for a given level"""
+        level_thresholds = [
+            0,
+            300,
+            900,
+            2700,
+            6500,
+            14000,
+            23000,
+            34000,
+            48000,
+            64000,
+            85000,
+            100000,
+            120000,
+            140000,
+            165000,
+            195000,
+            225000,
+            265000,
+            305000,
+            355000,
+        ]
+        if level <= 0:
+            return 0
+        if level >= len(level_thresholds):
+            return level_thresholds[-1]
+        return level_thresholds[level - 1]
+
+    @staticmethod
     def get_character_stats(uid: str) -> Dict[str, Any]:
         character = CharacterService.get_character(uid)
         if not character:
             raise HTTPException(status_code=404, detail="Character not found")
+
+        # Initialize experience if not present
+        if not hasattr(character, "experience"):
+            character.experience = 0
+            character.save()
+
+        # Get experience value (defaulting to 0 if somehow still None)
+        experience = getattr(character, "experience", 0) or 0
+
+        # Calculate level based on experience
+        level = CharacterService.calculate_level(experience)
+
+        # Calculate experience needed for next level
+        next_level_exp = CharacterService.get_experience_for_level(level + 1)
+        experience_to_next_level = next_level_exp - experience if level < 20 else 0
 
         # Set current_hit_points to hit_points if it's None
         if character.current_hit_points is None:
@@ -185,6 +232,10 @@ class CharacterService:
             "current_hit_points": character.current_hit_points,
             "temp_hit_points": character.temp_hit_points,
             "hit_dice": character.hit_dice,
+            # Experience and Level
+            "experience": experience,
+            "level": level,
+            "experience_to_next_level": experience_to_next_level,
         }
 
     @staticmethod
@@ -220,3 +271,35 @@ class CharacterService:
                 char.current_hit_points = char.hit_points
 
         return characters
+
+    @staticmethod
+    def calculate_level(experience: int) -> int:
+        """Calculate character level based on experience points"""
+        # D&D 5e level thresholds
+        level_thresholds = [
+            0,
+            300,
+            900,
+            2700,
+            6500,
+            14000,
+            23000,
+            34000,
+            48000,
+            64000,
+            85000,
+            100000,
+            120000,
+            140000,
+            165000,
+            195000,
+            225000,
+            265000,
+            305000,
+            355000,
+        ]
+
+        for level, threshold in enumerate(level_thresholds, 1):
+            if experience < threshold:
+                return level - 1
+        return 20  # Maximum level in D&D 5e
