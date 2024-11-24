@@ -54,6 +54,12 @@ const Layout = ({ children }) => {
                   My Characters
                 </button>
                 <button
+                  onClick={() => router.push('/chat')}
+                  className="btn-secondary"
+                >
+                  Chat
+                </button>
+                <button
                   onClick={handleLogout}
                   className="btn-secondary"
                 >
