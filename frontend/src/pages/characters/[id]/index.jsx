@@ -4,6 +4,50 @@ import Layout from '../../../components/Layout'
 import { useAuth } from '../../../contexts/AuthContext'
 import { api } from '../../../utils/api'
 
+const calculateModifier = (value) => {
+  return value >= 0 ? `+${value}` : value.toString()
+}
+
+const StatBlock = ({ title, stats, showAbility = false }) => (
+  <div className="bg-[var(--color-bg-secondary)] p-4 rounded-lg">
+    <h2 className="text-xl font-bold mb-4">{title}</h2>
+    <div className="grid grid-cols-1 gap-y-1 text-sm">
+      {Object.entries(stats).map(([name, data]) => {
+        const tooltipText = data.is_proficient 
+          ? `Base ${data.ability} modifier (${calculateModifier(data.modifier)}) + proficiency bonus (${data.proficiency_bonus})`
+          : `Base ${data.ability} modifier (${calculateModifier(data.modifier)})`;
+
+        return (
+          <div key={name} 
+               className="flex items-center justify-between py-0.5 border-b border-[var(--color-border)] last:border-0"
+               title={tooltipText}>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                {data.is_proficient && (
+                  <span className="w-2 h-2 rounded-full bg-green-500"/>
+                )}
+                <span className="capitalize">
+                  {name.split('_').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1)
+                  ).join(' ')}
+                </span>
+                {showAbility && (
+                  <span className="text-xs text-[var(--color-text-secondary)]">
+                    ({data.ability})
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className={`${data.is_proficient ? 'text-green-500' : ''} font-medium`}>
+              {calculateModifier(data.total_bonus)}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  </div>
+)
+
 export default function CharacterDetail() {
   const router = useRouter()
   const { id } = router.query
@@ -57,10 +101,6 @@ export default function CharacterDetail() {
         console.error('Failed to update description:', err)
       }
     }
-  }
-
-  const calculateModifier = (value) => {
-    return value >= 0 ? `+${value}` : value.toString()
   }
 
   const calculateModifierWithDetails = (value) => {
@@ -201,113 +241,64 @@ export default function CharacterDetail() {
 
         {/* Main Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          {/* Ability Scores */}
+          {/* Ability Scores - Simplified version */}
           <div className="bg-[var(--color-bg-secondary)] p-4 rounded-lg">
             <h2 className="text-xl font-bold mb-4">Ability Scores</h2>
             <div className="grid grid-cols-2 gap-4">
               {Object.entries(character.ability_scores).map(([ability, score]) => {
-                const { modifier, calculation } = calculateModifierWithDetails(score)
+                const modifier = Math.floor((score - 10) / 2)
                 return (
                   <div key={ability} className="text-center p-2 bg-[var(--color-bg-primary)] rounded">
                     <div className="text-sm uppercase">{ability}</div>
                     <div className="text-xl font-bold">{score}</div>
-                    <div className="text-sm font-medium">{modifier}</div>
-                    <div className="text-xs text-[var(--color-text-secondary)]">{calculation}</div>
+                    <div className="text-sm font-medium">
+                      {modifier >= 0 ? `+${modifier}` : modifier}
+                    </div>
                   </div>
                 )
               })}
             </div>
           </div>
 
-          {/* Combat Stats */}
+          {/* Combat Stats - Simplified calculations */}
           <div className="bg-[var(--color-bg-secondary)] p-4 rounded-lg">
             <h2 className="text-xl font-bold mb-4">Combat</h2>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span>Armor Class</span>
-                <span className="font-bold">{character.armor_class}</span>
+                <div className="text-right">
+                  <span className="font-bold">{character.armor_class}</span>
+                  <div className="text-xs text-[var(--color-text-secondary)]">
+                    10 + DEX
+                  </div>
+                </div>
               </div>
               <div className="flex justify-between items-center">
                 <span>Initiative</span>
-                <span className="font-bold">{calculateModifier(character.initiative)}</span>
+                <div className="text-right">
+                  <span className="font-bold">{calculateModifier(character.initiative)}</span>
+                  <div className="text-xs text-[var(--color-text-secondary)]">
+                    DEX
+                  </div>
+                </div>
               </div>
               <div className="flex justify-between items-center">
                 <span>Hit Dice</span>
-                <span className="font-bold">{character.hit_dice}</span>
+                <div className="text-right">
+                  <span className="font-bold">{character.hit_dice}</span>
+                  <div className="text-xs text-[var(--color-text-secondary)]">
+                    Level {character.level}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Saving Throws */}
-          <div className="bg-[var(--color-bg-secondary)] p-4 rounded-lg">
-            <h2 className="text-xl font-bold mb-4">Saving Throws</h2>
-            <div className="space-y-2">
-              {Object.entries(character.saving_throws).map(([ability, data]) => {
-                const baseModifier = character.ability_modifiers[ability]
-                const profBonus = data.is_proficient ? character.proficiency_bonus : 0
-                return (
-                  <div key={ability} className="flex justify-between items-center">
-                    <span className="capitalize">{ability}</span>
-                    <div className="text-right">
-                      <span className={`${data.is_proficient ? 'text-green-500' : ''} font-medium`}>
-                        {calculateModifier(data.total_bonus)}
-                      </span>
-                      <div className="text-xs text-[var(--color-text-secondary)]">
-                        {`${calculateModifier(baseModifier)} (${ability}) ${data.is_proficient ? ` + ${character.proficiency_bonus} (prof)` : ''}`}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
+          {/* Saving Throws - Simplified */}
+          <StatBlock title="Saving Throws" stats={character.saving_throws} />
 
-          {/* Skills Section */}
-          <div className="bg-[var(--color-bg-secondary)] p-4 rounded-lg">
-            <h2 className="text-xl font-bold mb-4">Skills</h2>
-            <div className="grid grid-cols-1 gap-y-1 text-sm">
-              {Object.entries(character.skills).map(([skill, data]) => {
-                const ability = (data.ability_score || '').toLowerCase()
-                const baseModifier = ability ? character.ability_modifiers[ability] : 0
-                const profBonus = data.is_proficient ? character.proficiency_bonus : 0
-                
-                return (
-                  <div key={skill} className="flex items-center justify-between py-0.5 border-b border-[var(--color-border)] last:border-0">
-                    <div className="flex items-center gap-2">
-                      {/* Skill name and proficiency dot */}
-                      <div className="flex items-center gap-1 min-w-[140px]">
-                        {data.is_proficient && (
-                          <span className="w-2 h-2 rounded-full bg-green-500"/>
-                        )}
-                        <span className="capitalize">
-                          {skill.split('_').map(word => 
-                            word.charAt(0).toUpperCase() + word.slice(1)
-                          ).join(' ')}
-                        </span>
-                      </div>
-                      
-                      {/* Ability type */}
-                      {ability && (
-                        <span className="text-xs text-[var(--color-text-secondary)] uppercase">
-                          ({ability})
-                        </span>
-                      )}
-                    </div>
-                    
-                    {/* Modifier calculation */}
-                    <div className="flex items-center gap-2">
-                      <div className="text-xs text-[var(--color-text-secondary)]">
-                        {`${calculateModifier(baseModifier)}${data.is_proficient ? ` + ${character.proficiency_bonus}` : ''}`}
-                      </div>
-                      <div className={`min-w-[30px] text-right ${data.is_proficient ? 'text-green-500' : ''} font-medium`}>
-                        {calculateModifier(data.total_bonus)}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
+          {/* Skills Section - Updated for new data structure */}
+          <StatBlock title="Skills" stats={character.skills} showAbility={true} />
         </div>
 
         {/* Back Button */}
