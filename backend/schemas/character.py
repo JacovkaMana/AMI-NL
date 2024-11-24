@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, Dict
+from typing import Optional, Dict, Union
 from datetime import datetime
 
 
@@ -99,6 +99,7 @@ class CharacterUpdate(CharacterBase):
 
 class SkillModifier(BaseModel):
     is_proficient: bool
+    ability: str
     modifier: int
     total_bonus: int
 
@@ -121,6 +122,7 @@ class CharacterStatsResponse(BaseModel):
     character_class: str
     subclass: Optional[str] = ""
     image_path: Optional[str] = None
+    icon: Optional[str] = None
 
     # Timestamps
     created_at: datetime
@@ -145,6 +147,7 @@ class CharacterStatsResponse(BaseModel):
     temp_hit_points: int
     hit_dice: str
 
+    # Experience and Level
     experience: int
     level: int
     experience_to_next_level: int

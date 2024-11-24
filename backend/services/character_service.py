@@ -37,18 +37,24 @@ class CharacterService:
             character_data["created_at"] = datetime.utcnow()
             character_data["updated_at"] = datetime.utcnow()
 
-            # Set current_hit_points equal to hit_points if not provided
-            if (
-                "hit_points" in character_data
-                and "current_hit_points" not in character_data
-            ):
-                character_data["current_hit_points"] = character_data["hit_points"]
+            # Set default values
+            character_data["experience"] = character_data.get("experience", 0)
+            character_data["level"] = character_data.get("level", 1)
 
             # Create character instance
             character = Character(**character_data)
+
+            # Calculate and set initial hit points
+            max_hp = character.get_max_hit_points()
+            character.hit_points = max_hp
+            character.current_hit_points = max_hp
+
+            # Calculate and set initial initiative
+            character.initiative = character.calculate_initiative()
+
             character.save()
 
-            # Create the OWNED_BY relationship from character to user
+            # Create the OWNED_BY relationship
             character.owner.connect(user)
 
             return character
@@ -146,53 +152,48 @@ class CharacterService:
         if not character:
             raise HTTPException(status_code=404, detail="Character not found")
 
-        # Initialize experience if not present
-        if not hasattr(character, "experience"):
-            character.experience = 0
-            character.save()
+        # Calculate base values
+        ability_modifiers = character.calculate_all_modifiers()
+        proficiency_bonus = int(character.calculate_proficiency_bonus())
 
-        # Get experience value (defaulting to 0 if somehow still None)
-        experience = getattr(character, "experience", 0) or 0
+        # Calculate saving throws with explicit type conversion
+        saving_throws = {}
+        for ability in [
+            "strength",
+            "dexterity",
+            "constitution",
+            "intelligence",
+            "wisdom",
+            "charisma",
+        ]:
+            save_data = character.calculate_saving_throw(ability)
+            saving_throws[ability] = {
+                "is_proficient": bool(save_data["is_proficient"]),
+                "modifier": int(save_data["modifier"]),
+                "total_bonus": int(save_data["total_bonus"]),
+            }
 
-        # Calculate level based on experience
+        # Calculate skill modifiers with explicit type conversion
+        skills = {}
+        for skill, ability in CharacterService.skill_to_ability.items():
+            skill_data = character.calculate_skill_modifier(skill, ability)
+            skills[skill] = {
+                "is_proficient": bool(skill_data["is_proficient"]),
+                "ability": str(ability),
+                "modifier": int(skill_data["modifier"]),
+                "total_bonus": int(skill_data["total_bonus"]),
+            }
+
+        # Calculate experience and level
+        experience = getattr(character, "experience", 0)
         level = CharacterService.calculate_level(experience)
-
-        # Calculate experience needed for next level
         next_level_exp = CharacterService.get_experience_for_level(level + 1)
         experience_to_next_level = next_level_exp - experience if level < 20 else 0
 
-        # Set current_hit_points to hit_points if it's None
+        # Ensure current hit points is set
         if character.current_hit_points is None:
-            character.current_hit_points = character.hit_points
+            character.current_hit_points = character.get_max_hit_points()
             character.save()
-
-        proficiency_bonus = character.calculate_proficiency_bonus()
-        ability_modifiers = character.calculate_all_modifiers()
-
-        # Calculate saving throw modifiers
-        saving_throws = {}
-        for ability, is_proficient in character.saving_throws.items():
-            base_modifier = ability_modifiers[ability]
-            saving_throws[ability] = {
-                "is_proficient": is_proficient,
-                "modifier": base_modifier,
-                "total_bonus": base_modifier
-                + (proficiency_bonus if is_proficient else 0),
-            }
-
-        # Calculate skill modifiers using the class-level mapping
-        skills = {}
-        for skill, is_proficient in character.skills.items():
-            ability = CharacterService.skill_to_ability[
-                skill
-            ]  # Use class-level mapping
-            base_modifier = ability_modifiers[ability]
-            skills[skill] = {
-                "is_proficient": is_proficient,
-                "modifier": base_modifier,
-                "total_bonus": base_modifier
-                + (proficiency_bonus if is_proficient else 0),
-            }
 
         return {
             # Basic Info
@@ -226,9 +227,9 @@ class CharacterService:
             "proficiency_bonus": proficiency_bonus,
             # Combat Stats
             "armor_class": character.armor_class,
-            "initiative": character.initiative,
+            "initiative": character.calculate_initiative(),
             "speed": character.speed,
-            "hit_points": character.hit_points,
+            "hit_points": character.get_max_hit_points(),
             "current_hit_points": character.current_hit_points,
             "temp_hit_points": character.temp_hit_points,
             "hit_dice": character.hit_dice,
@@ -303,3 +304,60 @@ class CharacterService:
             if experience < threshold:
                 return level - 1
         return 20  # Maximum level in D&D 5e
+
+    @staticmethod
+    def get_character_with_full_stats(uid: str) -> dict:
+        """Get character with full stats, including skill mappings and icon"""
+        character = CharacterService.get_character(uid)
+        if not character:
+            raise HTTPException(status_code=404, detail="Character not found")
+
+        # Get base stats
+        stats = CharacterService.get_character_stats(uid)
+
+        # Add character icon if it exists
+        stats["icon"] = character.icon if hasattr(character, "icon") else None
+
+        # Add basic character info
+        stats.update(
+            {
+                "name": character.name,
+                "race": character.race,
+                "class_name": character.character_class,
+                "level": getattr(character, "level", 1),
+                "experience": getattr(character, "experience", 0),
+                "background": character.background,
+                "alignment": character.alignment,
+            }
+        )
+
+        # No need for additional skill mappings since they're now included in get_character_stats
+
+        return stats
+
+    @staticmethod
+    def debug_character(uid: str) -> Dict[str, Any]:
+        """Debug method to check character data"""
+        character = CharacterService.get_character(uid)
+        if not character:
+            return {"error": "Character not found"}
+
+        try:
+            stats = CharacterService.get_character_stats(uid)
+            return {
+                "character_exists": True,
+                "basic_info": {
+                    "uid": character.uid,
+                    "name": character.name,
+                    "character_class": character.character_class,
+                },
+                "stats_computed": bool(stats),
+                "stats_keys": list(stats.keys()) if stats else None,
+                "raw_character": character.to_dict(),
+            }
+        except Exception as e:
+            return {
+                "error": str(e),
+                "character_exists": True,
+                "raw_character": character.to_dict() if character else None,
+            }

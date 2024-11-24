@@ -80,12 +80,12 @@ async def enhance_text(
         )
 
 
-async def enhance_prompt(original_prompt: str) -> str:
-    stmt = """
-    Layer 1 (background): depict a fantasy background illustration, with a location and atmosphere fitting the character's description.
-    Layer 2 (foreground): main focus. a 2d digital art of a dnd character. Bold lineart, with sublte shading and flat colors, a highly detailed and clean stylised graphic novel illustration. Upper half body close-up portrait. Character's description:
-    """
-    return stmt + original_prompt
+# async def enhance_prompt(original_prompt: str) -> str:
+#     stmt = """
+#     Layer 1 (background): depict a fantasy background illustration, with a location and atmosphere fitting the character's description.
+#     Layer 2 (foreground): main focus. a 2d digital art of a dnd character. Bold lineart, with sublte shading and flat colors, a highly detailed and clean stylised graphic novel illustration. Upper half body close-up portrait. Character's description:
+#     """
+#     return stmt + original_prompt
 
 
 @router.post("/generate")
@@ -99,11 +99,28 @@ async def generate_image(
     try:
 
         # Add the structural prompt
-        enhanced_prompt = await enhance_prompt(request.prompt)
-
+        # enhanced_prompt = await enhance_prompt(request.prompt)
+        enhanced_prompt = request.prompt
         # Make request to Hugging Face API with enhanced prompt
         response = requests.post(
-            HUGGING_FACE_API_URL, headers=headers, json={"inputs": enhanced_prompt}
+            "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell",
+            headers=headers,
+            json={
+                "inputs": f"""Layer 1 (background): depict a fantasy background illustration, with a location, palette, 
+                            mood and atmosphere fitting the character's description and the same style as the character.\r\n
+                            Layer 2 (foreground): I want a stylised 2d upper body shot portrait in a hand-drawn, gritty dark fantasy style, 
+                            with bold and strong black ink outlines. Ambient occlusion is always a black shape without variation of oppacity.
+                              It uses simple flat shading with distressed textures and muted and earthy colors, somber and atmospheric. 
+                              I specifically want a highly stylized, non-photorealistic, comic book illustration style, with minimal detail realism, 
+                              like a hand-drawn look. Negative: realism, realistic, digital realism, 3d, hyperrealism, cinematic, glossy, reflective, 
+                              smooth shading. Do not generate any text, label, watermark, or artist tag. 
+                              Character's description: {enhanced_prompt}""",
+                "parameters": {
+                    "guidance_scale": 1.0,
+                    "num_inference_steps": 4,
+                    "seed": 4254,
+                },
+            },
         )
 
         if response.status_code != 200:

@@ -79,26 +79,59 @@ async def get_my_characters(
 )
 async def get_character(uid: str, current_user: User = Depends(get_current_user)):
     """
-    Get a specific character by ID
+    Get a specific character by ID with full stats and icon
     """
-    character = CharacterService.get_character(uid)
-    if not character:
+    try:
+        # First check if character exists
+        character = CharacterService.get_character(uid)
+        if not character:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Character with uid {uid} not found",
+            )
+
+        # Check ownership
+        if not CharacterService.is_owner(character, current_user):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized to view this character",
+            )
+
+        # Get full stats
+        stats = CharacterService.get_character_with_full_stats(uid)
+
+        # Ensure we have all required fields for CharacterStatsResponse
+        required_fields = [
+            "uid",
+            "name",
+            "race",
+            "alignment",
+            "size",
+            "description",
+            "background",
+            "character_class",
+            "ability_scores",
+            "ability_modifiers",
+            "saving_throws",
+            "skills",
+            "proficiency_bonus",
+        ]
+
+        missing_fields = [field for field in required_fields if field not in stats]
+        if missing_fields:
+            raise ValueError(f"Missing required fields: {', '.join(missing_fields)}")
+
+        # Convert dict to CharacterStatsResponse and return
+        return CharacterStatsResponse(**stats)
+
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error in get_character: {str(e)}")  # For debugging
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Character not found"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving character: {str(e)}",
         )
-
-    # Check ownership
-    if not CharacterService.is_owner(character, current_user):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to view this character",
-        )
-
-    # Get stats (which now includes experience and level)
-    stats = CharacterService.get_character_stats(uid)
-
-    # Convert dict to CharacterStatsResponse
-    return CharacterStatsResponse(**stats)
 
 
 @router.patch(
@@ -303,7 +336,7 @@ async def get_character_stats(uid: str, current_user: User = Depends(get_current
     - Ability modifiers
     - Derived stats (AC, HP, etc.)
     - Saving throw proficiencies
-    - Skill proficiencies
+    - Skill proficiencies and their associated ability scores
     """
     character = CharacterService.get_character(uid)
     if not character:
@@ -314,7 +347,41 @@ async def get_character_stats(uid: str, current_user: User = Depends(get_current
             status_code=403, detail="Not authorized to view this character"
         )
 
-    return CharacterService.get_character_stats(uid)
+    # Get base stats
+    stats = CharacterService.get_character_stats(uid)
+
+    # Add character icon if it exists
+    stats["icon"] = character.icon if hasattr(character, "icon") else None
+
+    # Define skill to ability score mappings
+    skill_ability_mappings = {
+        "acrobatics": "DEXTERITY",
+        "animal_handling": "WISDOM",
+        "arcana": "INTELLIGENCE",
+        "athletics": "STRENGTH",
+        "deception": "CHARISMA",
+        "history": "INTELLIGENCE",
+        "insight": "WISDOM",
+        "intimidation": "CHARISMA",
+        "investigation": "INTELLIGENCE",
+        "medicine": "WISDOM",
+        "nature": "INTELLIGENCE",
+        "perception": "WISDOM",
+        "performance": "CHARISMA",
+        "persuasion": "CHARISMA",
+        "religion": "INTELLIGENCE",
+        "sleight_of_hand": "DEXTERITY",
+        "stealth": "DEXTERITY",
+        "survival": "WISDOM",
+    }
+
+    # Update each skill with its associated ability score
+    if "skills" in stats:
+        for skill_name, skill_data in stats["skills"].items():
+            if skill_name in skill_ability_mappings:
+                stats["skills"][skill_name]["stat"] = skill_ability_mappings[skill_name]
+
+    return stats
 
 
 @router.patch(
@@ -342,3 +409,9 @@ async def update_character_stats(
         )
 
     return CharacterService.update_character_stats(uid, stats_data)
+
+
+@router.get("/{uid}/debug", include_in_schema=False)
+async def debug_character(uid: str, current_user: User = Depends(get_current_user)):
+    """Debug endpoint to check character data"""
+    return CharacterService.debug_character(uid)

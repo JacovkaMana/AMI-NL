@@ -151,3 +151,10 @@ Check the return models for validity
 Recheck imports and create all necessary parts
 
 
+# Sprint 6 
+
+Let's fix @backend a bit, the most important right now is characters
+
+Review the @characters.py and @character_service.py and @character.py with @character.py , it should definetly get some work 
+
+Right now i am working with calculating values and modifiers, and it is working badly right now, please refactor the code and logic 

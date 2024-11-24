@@ -55,19 +55,64 @@ class Character(StructuredNode):
     updated_at = DateTimeProperty(default=datetime.utcnow)
     deleted_at = DateTimeProperty(default=None)
 
-    def calculate_proficiency_bonus(self):
-        # Implement proficiency bonus calculation based on level
-        return 2  # Default for level 1
+    def calculate_proficiency_bonus(self) -> int:
+        """Calculate proficiency bonus based on character level"""
+        level = getattr(self, "level", 1)
+        return 2 + ((level - 1) // 4)
 
-    def calculate_all_modifiers(self):
+    def calculate_ability_modifier(self, ability_score: int) -> int:
+        """Calculate ability modifier from ability score"""
+        return (ability_score - 10) // 2
+
+    def calculate_all_modifiers(self) -> dict:
+        """Calculate all ability score modifiers"""
         return {
-            "strength": (self.strength - 10) // 2,
-            "dexterity": (self.dexterity - 10) // 2,
-            "constitution": (self.constitution - 10) // 2,
-            "intelligence": (self.intelligence - 10) // 2,
-            "wisdom": (self.wisdom - 10) // 2,
-            "charisma": (self.charisma - 10) // 2,
+            "strength": self.calculate_ability_modifier(self.strength),
+            "dexterity": self.calculate_ability_modifier(self.dexterity),
+            "constitution": self.calculate_ability_modifier(self.constitution),
+            "intelligence": self.calculate_ability_modifier(self.intelligence),
+            "wisdom": self.calculate_ability_modifier(self.wisdom),
+            "charisma": self.calculate_ability_modifier(self.charisma),
         }
+
+    def calculate_saving_throw(self, ability: str) -> dict:
+        """Calculate saving throw bonus for a specific ability"""
+        base_modifier = int(self.calculate_ability_modifier(getattr(self, ability)))
+        is_proficient = bool(self.saving_throws.get(ability, False))
+        proficiency_bonus = (
+            int(self.calculate_proficiency_bonus()) if is_proficient else 0
+        )
+
+        return {
+            "is_proficient": is_proficient,
+            "modifier": base_modifier,
+            "total_bonus": base_modifier + proficiency_bonus,
+        }
+
+    def calculate_skill_modifier(self, skill: str, ability: str) -> dict:
+        """Calculate skill modifier including proficiency if applicable"""
+        base_modifier = int(self.calculate_ability_modifier(getattr(self, ability)))
+        is_proficient = bool(self.skills.get(skill, False))
+        proficiency_bonus = (
+            int(self.calculate_proficiency_bonus()) if is_proficient else 0
+        )
+
+        return {
+            "is_proficient": is_proficient,
+            "ability": str(ability),
+            "modifier": base_modifier,
+            "total_bonus": base_modifier + proficiency_bonus,
+        }
+
+    def calculate_initiative(self) -> int:
+        """Calculate initiative bonus"""
+        return self.calculate_ability_modifier(self.dexterity)
+
+    def get_max_hit_points(self) -> int:
+        """Calculate maximum hit points"""
+        constitution_modifier = self.calculate_ability_modifier(self.constitution)
+        level = getattr(self, "level", 1)
+        return self.hit_points + (constitution_modifier * level)
 
     def to_dict(self):
         return {
