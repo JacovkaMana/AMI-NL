@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import Layout from '../components/Layout';
-import { useAuth } from '../contexts/AuthContext';
-import { api } from '../utils/api';
+import Layout from '../../components/Layout';
+import { useAuth } from '../../contexts/AuthContext';
+import { api } from '../../utils/api';
 
-const Characters = () => {
+export default function Characters() {
   const [characters, setCharacters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,7 +20,6 @@ const Characters = () => {
     const fetchCharacters = async () => {
       try {
         const response = await api.get('/api/characters/me');
-        console.log('Characters response:', response.data);
         setCharacters(response.data);
       } catch (err) {
         console.error('Error fetching characters:', err);
@@ -34,6 +33,14 @@ const Characters = () => {
       fetchCharacters();
     }
   }, [isAuthenticated, authLoading, router]);
+
+  const handleCharacterClick = (characterId) => {
+    router.push(`/characters/${characterId}`);
+  };
+
+  const handleCreateCharacter = () => {
+    router.push('/characters/create');
+  };
 
   if (authLoading || loading) {
     return (
@@ -61,7 +68,7 @@ const Characters = () => {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-cinzel text-[var(--color-text-primary)]">My Characters</h1>
           <button
-            onClick={() => router.push('/character-creation')}
+            onClick={handleCreateCharacter}
             className="btn-primary"
           >
             Create New Character
@@ -78,7 +85,7 @@ const Characters = () => {
               <div
                 key={character.uid}
                 className="bg-[var(--color-bg-secondary)] p-6 rounded-lg border border-[var(--color-border)] hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => router.push(`/character/${character.uid}`)}
+                onClick={() => handleCharacterClick(character.uid)}
               >
                 <h2 className="text-xl font-cinzel text-[var(--color-text-primary)] mb-2">{character.name}</h2>
                 <p className="text-[var(--color-text-secondary)] mb-2">
@@ -94,6 +101,4 @@ const Characters = () => {
       </div>
     </Layout>
   );
-};
-
-export default Characters;
+} 

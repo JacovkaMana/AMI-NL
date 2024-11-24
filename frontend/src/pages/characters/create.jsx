@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { useAuth } from '../contexts/AuthContext';
-import Layout from '../components/Layout';
-import { api } from '../utils/api';
+import Layout from '../../components/Layout';
+import { useAuth } from '../../contexts/AuthContext';
+import { api } from '../../utils/api';
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
+// Constants
 const CLASS_OPTIONS = ['Fighter', 'Wizard', 'Rogue', 'Cleric'];
 const RACE_OPTIONS = ['Human', 'Elf', 'Dwarf', 'Orc'];
 const BACKGROUND_OPTIONS = ['Noble', 'Criminal', 'Folk Hero', 'Sage'];
 const ALIGNMENT_OPTIONS = ['Lawful Good', 'Neutral Good', 'Chaotic Good', 'Lawful Neutral', 'True Neutral', 'Chaotic Neutral', 'Lawful Evil', 'Neutral Evil', 'Chaotic Evil'];
-
 const SKILLS = {
   acrobatics: { stat: 'dexterity', name: 'Acrobatics' },
   'animal-handling': { stat: 'wisdom', name: 'Animal Handling' },
@@ -31,7 +31,6 @@ const SKILLS = {
   stealth: { stat: 'dexterity', name: 'Stealth' },
   survival: { stat: 'wisdom', name: 'Survival' }
 };
-
 const SIZE_OPTIONS = ['Tiny', 'Small', 'Medium', 'Large'];
 const DEFAULT_HIT_DICE = {
   'Fighter': 'd10',
@@ -39,7 +38,6 @@ const DEFAULT_HIT_DICE = {
   'Rogue': 'd8',
   'Cleric': 'd8'
 };
-
 const DEFAULT_HP_BY_CLASS = {
   'Fighter': 10,
   'Wizard': 6,
@@ -47,15 +45,10 @@ const DEFAULT_HP_BY_CLASS = {
   'Cleric': 8
 };
 
-const CharacterCreation = () => {
+export default function CreateCharacter() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/');
-    }
-  }, [isAuthenticated, router]);
+  const imgRef = useRef(null);
 
   const [character, setCharacter] = useState({
     name: '',
@@ -99,17 +92,19 @@ const CharacterCreation = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
-
   const [generatedImage, setGeneratedImage] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
-
   const [crop, setCrop] = useState();
   const [completedCrop, setCompletedCrop] = useState(null);
   const [croppedIcon, setCroppedIcon] = useState(null);
   const [showCropper, setShowCropper] = useState(false);
-  const imgRef = useRef(null);
-
   const [isEnhancing, setIsEnhancing] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/');
+    }
+  }, [isAuthenticated, router]);
 
   const calculateModifier = (value) => Math.floor((value - 10) / 2);
 
@@ -145,52 +140,6 @@ const CharacterCreation = () => {
       stats: newStats,
     }));
     updateDerivedStats(character.class, newStats);
-  };
-
-  const StatBox = ({ stat, value, onChange, character, skills, onProficiencyToggle }) => {
-    const modifier = calculateModifier(value);
-    const relatedSkills = Object.entries(skills).filter(([_, skill]) => skill.stat === stat.toLowerCase());
-
-    return (
-      <div className="relative flex flex-col items-center p-4 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-bg-secondary)]">
-        <label className="absolute -top-3 bg-[var(--color-bg-secondary)] px-2 text-sm font-cinzel text-[var(--color-text-primary)] uppercase">
-          {stat}
-        </label>
-        <input
-          type="number"
-          name={stat}
-          value={value}
-          onChange={onChange}
-          className="w-16 h-16 text-2xl text-center border-2 border-[var(--color-border)] rounded-full bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
-        />
-        <span className="mt-2 text-sm font-roboto text-[var(--color-text-primary)]">
-          Modifier: {modifier >= 0 ? `+${modifier}` : modifier}
-        </span>
-        
-        {/* Updated Skills Section with styled checkbox */}
-        <div className="mt-4 w-full space-y-2">
-          {relatedSkills.map(([skillId, { name }]) => {
-            const isProficient = character?.proficiencies?.[skillId] || false;
-            const totalBonus = modifier + (isProficient ? 2 : 0);
-
-            return (
-              <div key={skillId} className="flex items-center justify-between text-[var(--color-text-primary)]">
-                <label className="flex items-center space-x-2 text-[var(--color-text-primary)]">
-                  <input
-                    type="checkbox"
-                    checked={isProficient}
-                    onChange={() => handleProficiencyToggle(skillId)}
-                    className="w-4 h-4 rounded border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-accent)] focus:ring-[var(--color-accent)] focus:ring-offset-0 focus:ring-2 transition-colors duration-200"
-                  />
-                  <span className="text-[var(--color-text-primary)]">{name}</span>
-                </label>
-                <span className="text-[var(--color-text-primary)]">+{totalBonus}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
   };
 
   const updateDerivedStats = (newClass, stats) => {
@@ -264,6 +213,103 @@ const CharacterCreation = () => {
     }
   };
 
+  const handleGeneratePreview = async () => {
+    setIsGenerating(true);
+    try {
+      const prompt = `A fantasy character portrait of a ${character.race} ${character.class}. 
+        ${character.description || ''}`;
+
+      const response = await api.post('/api/image-generation/generate', {
+        prompt: prompt
+      });
+
+      if (response.data && response.data.image_path) {
+        const imagePath = response.data.image_path;
+        setGeneratedImage(imagePath);
+        setCharacter(prev => ({
+          ...prev,
+          image_path: imagePath
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to generate image:', error);
+      alert('Failed to generate character preview');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleEnhanceDescription = async (e) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      
+      if (!character.description.trim()) return;
+      
+      setIsEnhancing(true);
+      try {
+        const response = await api.post('/api/image-generation/enhance', {
+          prompt: character.description
+        });
+
+        if (response.data && response.data.enhanced_prompt) {
+          setCharacter(prev => ({
+            ...prev,
+            description: response.data.enhanced_prompt
+          }));
+        }
+      } catch (error) {
+        console.error('Failed to enhance description:', error);
+      } finally {
+        setIsEnhancing(false);
+      }
+    }
+  };
+
+  const StatBox = ({ stat, value, onChange, character, skills, onProficiencyToggle }) => {
+    const modifier = calculateModifier(value);
+    const relatedSkills = Object.entries(skills).filter(([_, skill]) => skill.stat === stat.toLowerCase());
+
+    return (
+      <div className="relative flex flex-col items-center p-4 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-bg-secondary)]">
+        <label className="absolute -top-3 bg-[var(--color-bg-secondary)] px-2 text-sm font-cinzel text-[var(--color-text-primary)] uppercase">
+          {stat}
+        </label>
+        <input
+          type="number"
+          name={stat}
+          value={value}
+          onChange={onChange}
+          className="w-16 h-16 text-2xl text-center border-2 border-[var(--color-border)] rounded-full bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+        />
+        <span className="mt-2 text-sm font-roboto text-[var(--color-text-primary)]">
+          Modifier: {modifier >= 0 ? `+${modifier}` : modifier}
+        </span>
+        
+        <div className="mt-4 w-full space-y-2">
+          {relatedSkills.map(([skillId, { name }]) => {
+            const isProficient = character?.proficiencies?.[skillId] || false;
+            const totalBonus = modifier + (isProficient ? 2 : 0);
+
+            return (
+              <div key={skillId} className="flex items-center justify-between text-[var(--color-text-primary)]">
+                <label className="flex items-center space-x-2 text-[var(--color-text-primary)]">
+                  <input
+                    type="checkbox"
+                    checked={isProficient}
+                    onChange={() => handleProficiencyToggle(skillId)}
+                    className="w-4 h-4 rounded border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-accent)] focus:ring-[var(--color-accent)] focus:ring-offset-0 focus:ring-2 transition-colors duration-200"
+                  />
+                  <span className="text-[var(--color-text-primary)]">{name}</span>
+                </label>
+                <span className="text-[var(--color-text-primary)]">+{totalBonus}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   const renderCombatStats = () => (
     <div className="bg-[var(--color-bg-secondary)] rounded-lg p-4 border border-[var(--color-border)]">
       <h2 className="text-xl font-cinzel text-[var(--color-text-primary)] mb-4">Combat Statistics</h2>
@@ -316,260 +362,6 @@ const CharacterCreation = () => {
     </div>
   );
 
-  const handleGeneratePreview = async () => {
-    setIsGenerating(true);
-    try {
-      const prompt = `A fantasy character portrait of a ${character.race} ${character.class}. 
-        ${character.description || ''}`;
-
-      const response = await api.post('/api/image-generation/generate', {
-        prompt: prompt
-      });
-
-      if (response.data && response.data.image_path) {
-        const imagePath = response.data.image_path;
-        setGeneratedImage(imagePath);
-        setCharacter(prev => ({
-          ...prev,
-          image_path: imagePath
-        }));
-      }
-    } catch (error) {
-      console.error('Failed to generate image:', error);
-      alert('Failed to generate character preview');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const onImageLoad = (e) => {
-    const { width, height } = e.target;
-    setCrop({
-      unit: '%',
-      width: 50,
-      height: 50,
-      x: 25,
-      y: 25,
-      aspect: 1
-    });
-  };
-
-  const getCroppedImg = async (image, crop) => {
-    if (!crop || !image) return null;
-
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.src = image.src;
-
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const scaleX = img.naturalWidth / img.width;
-        const scaleY = img.naturalHeight / img.height;
-
-        canvas.width = crop.width;
-        canvas.height = crop.height;
-        const ctx = canvas.getContext('2d');
-
-        ctx.imageSmoothingQuality = 'high';
-
-        const sourceX = crop.x * scaleX;
-        const sourceY = crop.y * scaleY;
-        const sourceWidth = crop.width * scaleX;
-        const sourceHeight = crop.height * scaleY;
-
-        ctx.drawImage(
-          img,
-          sourceX,
-          sourceY,
-          sourceWidth,
-          sourceHeight,
-          0,
-          0,
-          crop.width,
-          crop.height
-        );
-
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              reject(new Error('Canvas is empty'));
-              return;
-            }
-            resolve(blob);
-          },
-          'image/jpeg',
-          1
-        );
-      };
-
-      img.onerror = () => {
-        reject(new Error('Failed to load image'));
-      };
-    });
-  };
-
-  const handleCropComplete = async () => {
-    if (!completedCrop || !imgRef.current) {
-      console.error('Crop or image reference is missing');
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-
-      const croppedBlob = await getCroppedImg(imgRef.current, completedCrop);
-      
-      if (!croppedBlob) {
-        throw new Error('Failed to generate crop');
-      }
-
-      const croppedUrl = URL.createObjectURL(croppedBlob);
-      setCroppedIcon(croppedUrl);
-
-      setCharacter(prev => ({
-        ...prev,
-        iconBlob: croppedBlob
-      }));
-
-      setShowCropper(false);
-
-      if (character.id) {
-        const formData = new FormData();
-        formData.append('file', croppedBlob, 'icon.jpg');
-        formData.append('character_id', character.id);
-
-        await api.post('/api/upload-image/', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-      }
-    } catch (error) {
-      console.error('Error cropping image:', error);
-      setError('Failed to crop image. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleEnhanceDescription = async (e) => {
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      
-      if (!character.description.trim()) return;
-      
-      setIsEnhancing(true);
-      try {
-        const response = await api.post('/api/image-generation/enhance', {
-          prompt: character.description
-        });
-
-        if (response.data && response.data.enhanced_prompt) {
-          setCharacter(prev => ({
-            ...prev,
-            description: response.data.enhanced_prompt
-          }));
-        }
-      } catch (error) {
-        console.error('Failed to enhance description:', error);
-      } finally {
-        setIsEnhancing(false);
-      }
-    }
-  };
-
-  const renderCharacterPreview = () => (
-    <div className="bg-[var(--color-bg-secondary)] rounded-lg p-4 border border-[var(--color-border)]">
-      <h2 className="text-xl font-cinzel text-[var(--color-text-primary)] mb-4">Character Preview</h2>
-      
-      {/* Main Preview Area */}
-      <div className="w-full h-[400px] bg-[var(--color-bg-secondary)] rounded-lg flex items-center justify-center border border-[var(--color-border)] overflow-hidden">
-        {isGenerating ? (
-          <div className="flex flex-col items-center space-y-2">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-accent)]"></div>
-            <p className="text-[var(--color-text-primary)] font-roboto">Generating preview...</p>
-          </div>
-        ) : generatedImage ? (
-          showCropper ? (
-            <ReactCrop
-              crop={crop}
-              onChange={setCrop}
-              onComplete={(c) => setCompletedCrop(c)}
-              aspect={1}
-              circularCrop
-            >
-              <img
-                ref={imgRef}
-                crossOrigin="anonymous"
-                src={`${process.env.NEXT_PUBLIC_API_URL}/media/${generatedImage}`}
-                alt="Character Preview"
-                className="w-full h-full object-contain"
-                onLoad={onImageLoad}
-              />
-            </ReactCrop>
-          ) : (
-            <img
-              crossOrigin="anonymous"
-              src={`${process.env.NEXT_PUBLIC_API_URL}/media/${generatedImage}`}
-              alt="Character Preview"
-              className="w-full h-full object-contain"
-              onError={(e) => {
-                console.error('Image failed to load');
-                e.target.src = '/placeholder-character.png';
-              }}
-            />
-          )
-        ) : (
-          <p className="text-[var(--color-text-primary)] italic font-roboto">
-            Character preview will appear here
-          </p>
-        )}
-      </div>
-
-      {/* Control Buttons */}
-      <div className="flex gap-2 mt-4">
-        <button
-          type="button"
-          onClick={handleGeneratePreview}
-          disabled={isGenerating || !character.race || !character.class}
-          className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isGenerating ? 'Generating Preview...' : 'Generate Preview'}
-        </button>
-        
-        {generatedImage && (
-          <>
-            <button
-              type="button"
-              onClick={() => setShowCropper(!showCropper)}
-              className="btn-secondary"
-            >
-              {showCropper ? 'Cancel Crop' : 'Crop Icon'}
-            </button>
-            
-            {showCropper && (
-              <button
-                type="button"
-                onClick={handleCropComplete}
-                disabled={isSubmitting}
-                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? 'Processing...' : 'Complete Crop'}
-              </button>
-            )}
-          </>
-        )}
-      </div>
-
-      {(!character.race || !character.class) && (
-        <p className="text-sm text-[var(--color-text-primary)] opacity-60 mt-2 text-center">
-          Please select a race and class first
-        </p>
-      )}
-    </div>
-  );
-
   return (
     <Layout>
       <div className="py-8 px-4">
@@ -615,7 +407,6 @@ const CharacterCreation = () => {
                     </div>
                   </div>
 
-                  {/* Other basic info fields with updated styling */}
                   {['race', 'background', 'alignment'].map((field) => (
                     <div key={field}>
                       <label className="block text-sm font-roboto mb-1 text-[var(--color-text-primary)] capitalize">
@@ -690,7 +481,94 @@ const CharacterCreation = () => {
               </div>
 
               {/* Character Preview */}
-              {renderCharacterPreview()}
+              <div className="bg-[var(--color-bg-secondary)] rounded-lg p-4 border border-[var(--color-border)]">
+                <h2 className="text-xl font-cinzel text-[var(--color-text-primary)] mb-4">Character Preview</h2>
+                
+                {/* Main Preview Area */}
+                <div className="w-full h-[400px] bg-[var(--color-bg-secondary)] rounded-lg flex items-center justify-center border border-[var(--color-border)] overflow-hidden">
+                  {isGenerating ? (
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-accent)]"></div>
+                      <p className="text-[var(--color-text-primary)] font-roboto">Generating preview...</p>
+                    </div>
+                  ) : generatedImage ? (
+                    showCropper ? (
+                      <ReactCrop
+                        crop={crop}
+                        onChange={setCrop}
+                        onComplete={(c) => setCompletedCrop(c)}
+                        aspect={1}
+                        circularCrop
+                      >
+                        <img
+                          ref={imgRef}
+                          crossOrigin="anonymous"
+                          src={`${process.env.NEXT_PUBLIC_API_URL}/media/${generatedImage}`}
+                          alt="Character Preview"
+                          className="w-full h-full object-contain"
+                          onLoad={onImageLoad}
+                        />
+                      </ReactCrop>
+                    ) : (
+                      <img
+                        crossOrigin="anonymous"
+                        src={`${process.env.NEXT_PUBLIC_API_URL}/media/${generatedImage}`}
+                        alt="Character Preview"
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          console.error('Image failed to load');
+                          e.target.src = '/placeholder-character.png';
+                        }}
+                      />
+                    )
+                  ) : (
+                    <p className="text-[var(--color-text-primary)] italic font-roboto">
+                      Character preview will appear here
+                    </p>
+                  )}
+                </div>
+
+                {/* Control Buttons */}
+                <div className="flex gap-2 mt-4">
+                  <button
+                    type="button"
+                    onClick={handleGeneratePreview}
+                    disabled={isGenerating || !character.race || !character.class}
+                    className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isGenerating ? 'Generating Preview...' : 'Generate Preview'}
+                  </button>
+                  
+                  {generatedImage && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setShowCropper(!showCropper)}
+                        className="btn-secondary"
+                      >
+                        {showCropper ? 'Cancel Crop' : 'Crop Icon'}
+                      </button>
+                      
+                      {showCropper && (
+                        <button
+                          type="button"
+                          onClick={handleCropComplete}
+                          disabled={isSubmitting}
+                          className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isSubmitting ? 'Processing...' : 'Complete Crop'}
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                {(!character.race || !character.class) && (
+                  <p className="text-sm text-[var(--color-text-primary)] opacity-60 mt-2 text-center">
+                    Please select a race and class first
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
@@ -712,9 +590,4 @@ const CharacterCreation = () => {
       </div>
     </Layout>
   );
-};
-
-export default CharacterCreation;
-
-
-
+} 

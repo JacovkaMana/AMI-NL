@@ -1,68 +1,71 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import Layout from '../../components/Layout';
-import { useAuth } from '../../contexts/AuthContext';
-import { api } from '../../utils/api';
+import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react'
+import Layout from '../../../components/Layout'
+import { useAuth } from '../../../contexts/AuthContext'
+import { api } from '../../../utils/api'
 
-const CharacterSheet = () => {
-  const router = useRouter();
-  const { id } = router.query;
-  const { isAuthenticated, token } = useAuth();
-  const [character, setCharacter] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isEditingDesc, setIsEditingDesc] = useState(false);
-  const [editedDesc, setEditedDesc] = useState('');
+export default function CharacterDetail() {
+  const router = useRouter()
+  const { id } = router.query
+  const { isAuthenticated, token } = useAuth()
+  const [character, setCharacter] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [isEditingDesc, setIsEditingDesc] = useState(false)
+  const [editedDesc, setEditedDesc] = useState('')
 
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push('/auth/login');
-      return;
+      router.push('/auth/login')
+      return
     }
 
     const fetchCharacter = async () => {
-      if (!id) return;
+      if (!id) return
       try {
         const response = await api.get(`/api/characters/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
-        });
-        setCharacter(response.data);
+        })
+        setCharacter(response.data)
+        setEditedDesc(response.data.description || '')
       } catch (err) {
-        setError('Failed to load character');
+        setError('Failed to load character')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchCharacter();
-  }, [id, isAuthenticated, token, router]);
+    if (id) {
+      fetchCharacter()
+    }
+  }, [id, isAuthenticated, token, router])
 
   const handleDescriptionEdit = async (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
+      e.preventDefault()
       try {
         await api.patch(`/api/characters/${id}`, 
           { description: editedDesc },
           { headers: { Authorization: `Bearer ${token}` }}
-        );
+        )
         setCharacter(prev => ({
           ...prev,
           description: editedDesc
-        }));
-        setIsEditingDesc(false);
+        }))
+        setIsEditingDesc(false)
       } catch (err) {
-        console.error('Failed to update description:', err);
+        console.error('Failed to update description:', err)
       }
     }
-  };
-
-  if (loading) return <Layout><div className="container mx-auto p-4">Loading...</div></Layout>;
-  if (error) return <Layout><div className="container mx-auto p-4 text-red-500">{error}</div></Layout>;
-  if (!character) return <Layout><div className="container mx-auto p-4">Character not found</div></Layout>;
+  }
 
   const calculateModifier = (value) => {
-    return value >= 0 ? `+${value}` : value.toString();
-  };
+    return value >= 0 ? `+${value}` : value.toString()
+  }
+
+  if (loading) return <Layout><div className="container mx-auto p-4">Loading...</div></Layout>
+  if (error) return <Layout><div className="container mx-auto p-4 text-red-500">{error}</div></Layout>
+  if (!character) return <Layout><div className="container mx-auto p-4">Character not found</div></Layout>
 
   return (
     <Layout>
@@ -73,7 +76,7 @@ const CharacterSheet = () => {
           <div className="md:col-span-1">
             {character.image_path && (
               <img
-                src={`http://localhost:8000/media/${character.image_path}`}
+                src={`${process.env.NEXT_PUBLIC_API_URL}/media/${character.image_path}`}
                 alt={character.name}
                 className="w-full h-64 object-cover rounded-lg shadow-lg"
               />
@@ -94,10 +97,7 @@ const CharacterSheet = () => {
                   </span>
                 </div>
                 <div className="relative w-full h-1.5">
-                  {/* Background bar */}
                   <div className="absolute w-full h-full bg-[var(--color-bg-secondary)] rounded-full" />
-                  
-                  {/* XP progress bar */}
                   <div 
                     className="absolute h-full transition-all duration-300 rounded-full bg-yellow-500/75"
                     style={{
@@ -121,18 +121,13 @@ const CharacterSheet = () => {
                   </span>
                 </div>
                 <div className="relative w-full h-2">
-                  {/* Background bar */}
                   <div className="absolute w-full h-full bg-[var(--color-bg-secondary)] rounded-full" />
-                  
-                  {/* Main HP bar */}
                   <div 
                     className="absolute h-full transition-all duration-300 rounded-full bg-[var(--color-text-primary)] opacity-75"
                     style={{
                       width: `${(character.current_hit_points / character.hit_points) * 100}%`
                     }}
                   />
-                  
-                  {/* Temporary HP bar */}
                   {character.temp_hit_points > 0 && (
                     <div 
                       className="absolute h-full bg-blue-400 opacity-50 transition-all duration-300 rounded-full"
@@ -166,8 +161,8 @@ const CharacterSheet = () => {
                 Description
                 <button 
                   onClick={() => {
-                    setIsEditingDesc(true);
-                    setEditedDesc(character.description);
+                    setIsEditingDesc(true)
+                    setEditedDesc(character.description)
                   }}
                   className="text-sm text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]"
                 >
@@ -180,8 +175,8 @@ const CharacterSheet = () => {
                   onChange={(e) => setEditedDesc(e.target.value)}
                   onKeyDown={handleDescriptionEdit}
                   onBlur={() => {
-                    setIsEditingDesc(false);
-                    setEditedDesc(character.description);
+                    setIsEditingDesc(false)
+                    setEditedDesc(character.description)
                   }}
                   className="w-full h-32 p-2 text-sm text-[var(--color-text-primary)] bg-[var(--color-bg-primary)] 
                     border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-1 
@@ -246,7 +241,7 @@ const CharacterSheet = () => {
             </div>
           </div>
 
-          {/* Updated Skills Section */}
+          {/* Skills Section */}
           <div className="bg-[var(--color-bg-secondary)] p-4 rounded-lg">
             <h2 className="text-xl font-bold mb-4">Skills</h2>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
@@ -282,7 +277,5 @@ const CharacterSheet = () => {
         </div>
       </div>
     </Layout>
-  );
-};
-
-export default CharacterSheet; 
+  )
+} 
