@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import { centerCrop, makeAspectCrop } from 'react-image-crop';
 
 // Constants
 const CLASS_OPTIONS = ['Fighter', 'Wizard', 'Rogue', 'Cleric'];
@@ -99,6 +100,7 @@ export default function CreateCharacter() {
   const [croppedIcon, setCroppedIcon] = useState(null);
   const [showCropper, setShowCropper] = useState(false);
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [cropperOverlay, setCropperOverlay] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -362,6 +364,76 @@ export default function CreateCharacter() {
     </div>
   );
 
+  const onImageLoad = (e) => {
+    const { width, height } = e.currentTarget;
+    const crop = centerCrop(
+      makeAspectCrop(
+        {
+          unit: '%',
+          width: 90,
+        },
+        1,
+        width,
+        height
+      ),
+      width,
+      height
+    );
+    setCrop(crop);
+  };
+
+  const handleCropComplete = async () => {
+    if (!completedCrop || !imgRef.current) return;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const image = imgRef.current;
+
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+
+    canvas.width = completedCrop.width;
+    canvas.height = completedCrop.height;
+
+    ctx.drawImage(
+      image,
+      completedCrop.x * scaleX,
+      completedCrop.y * scaleY,
+      completedCrop.width * scaleX,
+      completedCrop.height * scaleY,
+      0,
+      0,
+      completedCrop.width,
+      completedCrop.height
+    );
+
+    // Convert the canvas to a blob
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        console.error('Canvas is empty');
+        return;
+      }
+      
+      setCharacter(prev => ({
+        ...prev,
+        iconBlob: blob
+      }));
+      
+      // Create a preview URL for the cropped image
+      const previewUrl = URL.createObjectURL(blob);
+      setCroppedIcon(previewUrl);
+      setShowCropper(false);
+    }, 'image/jpeg', 0.95);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (croppedIcon) {
+        URL.revokeObjectURL(croppedIcon);
+      }
+    };
+  }, [croppedIcon]);
+
   return (
     <Layout>
       <div className="py-8 px-4">
@@ -480,36 +552,68 @@ export default function CreateCharacter() {
                 </div>
               </div>
 
-              {/* Character Preview */}
+              {/* Character Icon Section */}
+              <div className="bg-[var(--color-bg-secondary)] rounded-lg p-4 border border-[var(--color-border)]">
+                <h2 className="text-xl font-cinzel text-[var(--color-text-primary)] mb-4">Character Icon</h2>
+                
+                <div className="flex items-center space-x-4">
+                  {/* Icon Preview */}
+                  <div className="w-32 h-32 rounded-full border-2 border-[var(--color-border)] overflow-hidden flex items-center justify-center bg-[var(--color-bg-secondary)]">
+                    {croppedIcon ? (
+                      <img
+                        src={croppedIcon}
+                        alt="Character Icon"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-sm text-[var(--color-text-secondary)] text-center px-2">
+                        Crop your character image to create an icon
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Icon Controls */}
+                  <div className="flex-1 space-y-2">
+                    {generatedImage && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setCropperOverlay(!cropperOverlay)}
+                          className="btn-secondary w-full"
+                        >
+                          {cropperOverlay ? 'Cancel Crop' : 'Create Icon from Image'}
+                        </button>
+                      </>
+                    )}
+                    {croppedIcon && !cropperOverlay && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCroppedIcon(null);
+                          setCharacter(prev => ({ ...prev, iconBlob: null }));
+                        }}
+                        className="btn-secondary w-full"
+                      >
+                        Remove Icon
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Character Preview Section */}
               <div className="bg-[var(--color-bg-secondary)] rounded-lg p-4 border border-[var(--color-border)]">
                 <h2 className="text-xl font-cinzel text-[var(--color-text-primary)] mb-4">Character Preview</h2>
                 
                 {/* Main Preview Area */}
-                <div className="w-full h-[400px] bg-[var(--color-bg-secondary)] rounded-lg flex items-center justify-center border border-[var(--color-border)] overflow-hidden">
+                <div className="relative w-full h-[400px] bg-[var(--color-bg-secondary)] rounded-lg flex items-center justify-center border border-[var(--color-border)] overflow-hidden">
                   {isGenerating ? (
                     <div className="flex flex-col items-center space-y-2">
                       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-accent)]"></div>
                       <p className="text-[var(--color-text-primary)] font-roboto">Generating preview...</p>
                     </div>
                   ) : generatedImage ? (
-                    showCropper ? (
-                      <ReactCrop
-                        crop={crop}
-                        onChange={setCrop}
-                        onComplete={(c) => setCompletedCrop(c)}
-                        aspect={1}
-                        circularCrop
-                      >
-                        <img
-                          ref={imgRef}
-                          crossOrigin="anonymous"
-                          src={`${process.env.NEXT_PUBLIC_API_URL}/media/${generatedImage}`}
-                          alt="Character Preview"
-                          className="w-full h-full object-contain"
-                          onLoad={onImageLoad}
-                        />
-                      </ReactCrop>
-                    ) : (
+                    <>
                       <img
                         crossOrigin="anonymous"
                         src={`${process.env.NEXT_PUBLIC_API_URL}/media/${generatedImage}`}
@@ -520,7 +624,39 @@ export default function CreateCharacter() {
                           e.target.src = '/placeholder-character.png';
                         }}
                       />
-                    )
+                      {/* Cropper Overlay */}
+                      {cropperOverlay && (
+                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                          <div className="w-full h-full max-w-2xl max-h-2xl p-4">
+                            <ReactCrop
+                              crop={crop}
+                              onChange={setCrop}
+                              onComplete={(c) => setCompletedCrop(c)}
+                              aspect={1}
+                              circularCrop
+                            >
+                              <img
+                                ref={imgRef}
+                                crossOrigin="anonymous"
+                                src={`${process.env.NEXT_PUBLIC_API_URL}/media/${generatedImage}`}
+                                alt="Character Preview"
+                                className="max-w-full max-h-full"
+                                onLoad={onImageLoad}
+                              />
+                            </ReactCrop>
+                            <div className="mt-4 flex justify-center">
+                              <button
+                                type="button"
+                                onClick={handleCropComplete}
+                                className="btn-primary px-4 py-2"
+                              >
+                                Save Icon
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <p className="text-[var(--color-text-primary)] italic font-roboto">
                       Character preview will appear here
@@ -528,46 +664,23 @@ export default function CreateCharacter() {
                   )}
                 </div>
 
-                {/* Control Buttons */}
-                <div className="flex gap-2 mt-4">
+                {/* Generate Preview Button */}
+                <div className="mt-4">
                   <button
                     type="button"
                     onClick={handleGeneratePreview}
                     disabled={isGenerating || !character.race || !character.class}
-                    className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isGenerating ? 'Generating Preview...' : 'Generate Preview'}
                   </button>
-                  
-                  {generatedImage && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => setShowCropper(!showCropper)}
-                        className="btn-secondary"
-                      >
-                        {showCropper ? 'Cancel Crop' : 'Crop Icon'}
-                      </button>
-                      
-                      {showCropper && (
-                        <button
-                          type="button"
-                          onClick={handleCropComplete}
-                          disabled={isSubmitting}
-                          className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {isSubmitting ? 'Processing...' : 'Complete Crop'}
-                        </button>
-                      )}
-                    </>
+
+                  {(!character.race || !character.class) && (
+                    <p className="text-sm text-[var(--color-text-primary)] opacity-60 mt-2 text-center">
+                      Please select a race and class first
+                    </p>
                   )}
                 </div>
-
-                {(!character.race || !character.class) && (
-                  <p className="text-sm text-[var(--color-text-primary)] opacity-60 mt-2 text-center">
-                    Please select a race and class first
-                  </p>
-                )}
               </div>
             </div>
           </div>
