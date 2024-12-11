@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from api.main import router as api_router
 from core.config import init_neo4j
+from api.routes import chat_rooms
 
 app = FastAPI(
     title="D&D Character Manager API",
@@ -49,6 +50,7 @@ async def startup_event():
 
 # Include the API routes
 app.include_router(api_router, prefix="/api")
+app.include_router(chat_rooms.router, prefix="/api", tags=["chat"])
 
 if __name__ == "__main__":
     import uvicorn

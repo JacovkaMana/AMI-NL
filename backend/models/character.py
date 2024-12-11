@@ -47,7 +47,7 @@ class Character(StructuredNode):
     image_path = StringProperty()
 
     # Relationships
-    owner = RelationshipFrom(User, "OWNED_BY")
+    owner = RelationshipTo(User, "OWNED_BY")
 
     # Additional fields
     current_hit_points = IntegerProperty()
