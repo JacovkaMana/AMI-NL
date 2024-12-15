@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../../components/Layout';
 import { useAuth } from '../../contexts/AuthContext';
+import { useCharacter } from '../../contexts/CharacterContext';
 import { api } from '../../utils/api';
+import Link from 'next/link';
 
 const MESSAGE_TYPES = {
   SAY: {
@@ -50,9 +52,8 @@ const CUSTOM_COLORS = [
 
 export default function GamePage() {
   const router = useRouter();
-  const { character: characterId } = router.query;
   const { isAuthenticated } = useAuth();
-  const [character, setCharacter] = useState(null);
+  const { character, setCharacter } = useCharacter();
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -68,55 +69,20 @@ export default function GamePage() {
       return;
     }
 
-    if (!characterId) {
-      router.push('/characters');
-      return;
+    if (!character) {
+      const fetchCharacter = async () => {
+        try {
+          const response = await api.get('/api/characters/current'); // Adjust endpoint as needed
+          setCharacter(response.data);
+        } catch (err) {
+          console.error('Failed to fetch character:', err);
+          router.push('/characters');
+        }
+      };
+
+      fetchCharacter();
     }
-
-    const fetchCharacter = async () => {
-      try {
-        const response = await api.get(`/api/characters/${characterId}`);
-        setCharacter(response.data);
-        setMessages([{
-          type: 'system',
-          content: `Welcome to the tavern, ${response.data.name}! Other adventurers are gathered here...`,
-          timestamp: new Date().toISOString()
-        }]);
-
-        setPlayers([
-          {
-            id: 1,
-            character: {
-              name: "Thorin Oakenshield",
-              level: 5,
-              character_class: "Fighter",
-              image_path: null,
-              status: "online"
-            },
-            user: { username: "player1" }
-          },
-          {
-            id: 2,
-            character: {
-              name: "Gandalf the Grey",
-              level: 8,
-              character_class: "Wizard",
-              image_path: null,
-              status: "online"
-            },
-            user: { username: "player2" }
-          }
-        ]);
-      } catch (err) {
-        console.error('Failed to fetch character:', err);
-        router.push('/characters');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCharacter();
-  }, [isAuthenticated, characterId, router]);
+  }, [isAuthenticated, character, setCharacter, router]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -161,7 +127,7 @@ export default function GamePage() {
     return MESSAGE_TYPES[message.messageType].format(message.content);
   };
 
-  if (loading) {
+  if (!character) {
     return (
       <Layout>
         <div className="flex justify-center items-center min-h-screen">
@@ -346,6 +312,11 @@ export default function GamePage() {
                 </button>
               </div>
             </form>
+            <div className="mt-4 text-center">
+              <Link href="/game/map" legacyBehavior>
+                <a className="btn-primary">Go to DnD Map</a>
+              </Link>
+            </div>
           </div>
         </div>
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../../components/Layout';
 import { useAuth } from '../../contexts/AuthContext';
+import { useCharacter } from '../../contexts/CharacterContext';
 import { api } from '../../utils/api';
 
 export default function CharacterSelect() {
@@ -11,6 +12,7 @@ export default function CharacterSelect() {
   const [error, setError] = useState(null);
   const router = useRouter();
   const { isAuthenticated, loading: authLoading } = useAuth();
+  const { setCharacter } = useCharacter();
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -40,7 +42,8 @@ export default function CharacterSelect() {
 
   const handleEnterGame = () => {
     if (selectedCharacter) {
-      router.push(`/game?character=${selectedCharacter.uid}`);
+      setCharacter(selectedCharacter);
+      router.push('/game');
     }
   };
 

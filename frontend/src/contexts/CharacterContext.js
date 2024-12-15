@@ -2,28 +2,14 @@ import { createContext, useContext, useState } from 'react';
 
 const CharacterContext = createContext();
 
-export function CharacterProvider({ children }) {
-  const [characters, setCharacters] = useState([]);
-  const [selectedCharacter, setSelectedCharacter] = useState(null);
+export const useCharacter = () => useContext(CharacterContext);
 
-  const value = {
-    characters,
-    setCharacters,
-    selectedCharacter,
-    setSelectedCharacter,
-  };
+export const CharacterProvider = ({ children }) => {
+  const [character, setCharacter] = useState(null);
 
   return (
-    <CharacterContext.Provider value={value}>
+    <CharacterContext.Provider value={{ character, setCharacter }}>
       {children}
     </CharacterContext.Provider>
   );
-}
-
-export function useCharacter() {
-  const context = useContext(CharacterContext);
-  if (context === undefined) {
-    throw new Error('useCharacter must be used within a CharacterProvider');
-  }
-  return context;
-} 
+}; 

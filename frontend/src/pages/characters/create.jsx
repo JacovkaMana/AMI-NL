@@ -423,6 +423,7 @@ export default function CreateCharacter() {
       const previewUrl = URL.createObjectURL(blob);
       setCroppedIcon(previewUrl);
       setShowCropper(false);
+      setCropperOverlay(false);
     }, 'image/jpeg', 0.95);
   };
 
@@ -583,6 +584,15 @@ export default function CreateCharacter() {
                         >
                           {cropperOverlay ? 'Cancel Crop' : 'Create Icon from Image'}
                         </button>
+                        {cropperOverlay && (
+                          <button
+                            type="button"
+                            onClick={handleCropComplete}
+                            className="btn-primary w-full"
+                          >
+                            Confirm Crop
+                          </button>
+                        )}
                       </>
                     )}
                     {croppedIcon && !cropperOverlay && (

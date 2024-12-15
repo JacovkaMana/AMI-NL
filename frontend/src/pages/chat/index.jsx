@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Layout from '../../components/Layout';
 import ChatLayout from '../../components/Chat/ChatLayout';
 import { useAuth } from '../../contexts/AuthContext';
+import Link from 'next/link';
 
 export default function Chat() {
   const router = useRouter();
@@ -24,6 +25,11 @@ export default function Chat() {
           </div>
         </div>
       </ChatLayout>
+      <div className="p-4">
+        <Link href="/game/map">
+          <a className="btn-primary">Go to DnD Map</a>
+        </Link>
+      </div>
     </Layout>
   );
 } 
